@@ -1,15 +1,29 @@
 .drawerHeader {
-      display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 1 rem;
-  
+  display: flex;
+  justify-content: space-between;
+  min-height: 42px;
+  padding: 0 4px 0 10px;
+}
+
+.workspaceLabel {
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  font-size: 0.72rem;
+  font-weight: 760;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.navList {
+  display: grid;
+  gap: 2px;
 }
 
 .container {
-   padding-top: 110px;
   padding-left: 120px;
   padding-right: 24px;
+  padding-top: 110px;
 }
 
 .link {

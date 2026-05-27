@@ -1,16 +1,80 @@
 import { Grid, Paper, Typography } from "@mui/material";
+import type { ChartConfiguration } from "chart.js";
 import DataChart from "@/components/DataChart/DataChart";
-import { doughnutChartData } from "@/components/mockData";
+import {
+  acquisitionMixData,
+  customerTierData,
+  regionData,
+  retentionData,
+} from "@/components/mockData";
 import scss from "./TransactionsBottomRow.module.scss";
+
+const doughnutOptions: ChartConfiguration<"doughnut">["options"] = {
+  cutout: "68%",
+  plugins: {
+    legend: {
+      position: "bottom",
+    },
+  },
+};
+
+const analyticsCards = [
+  {
+    data: acquisitionMixData,
+    detail: "Organic and partner-sourced accounts continue to carry the highest win rate.",
+    highlight: "42%",
+    label: "Organic pipeline",
+    title: "Acquisition Mix",
+  },
+  {
+    data: retentionData,
+    detail: "Healthy renewals are offsetting a small at-risk segment flagged for outreach.",
+    highlight: "89%",
+    label: "Healthy accounts",
+    title: "Retention Health",
+  },
+  {
+    data: customerTierData,
+    detail: "Enterprise accounts now represent the largest share of recognized revenue.",
+    highlight: "48%",
+    label: "Enterprise share",
+    title: "Customer Tiers",
+  },
+  {
+    data: regionData,
+    detail: "North America remains the core market while Europe is gaining momentum.",
+    highlight: "58%",
+    label: "NA revenue",
+    title: "Regional Mix",
+  },
+];
 
 const TransactionsBottomRow = () => {
   return (
-    <Grid container spacing={2} className={scss.bottomRow} sx={{ width: "100%", maxWidth: "100%" }}>
-      {[1, 2, 3, 4].map((item) => (
-        <Grid key={item} size={{ xs: 12, sm: 6, md: 3 }}>
-          <Paper className={scss.dataCard}>
-            <Typography>Transactions per user type</Typography>
-            <DataChart type="doughnut" data={doughnutChartData} />
+    <Grid
+      className={scss.bottomRow}
+      container
+      spacing={2.5}
+      sx={{ maxWidth: "100%", width: "100%" }}
+    >
+      {analyticsCards.map((card) => (
+        <Grid key={card.title} size={{ xs: 12, sm: 6, lg: 3 }}>
+          <Paper className={scss.analyticsCard}>
+            <div className={scss.cardHeader}>
+              <div>
+                <Typography className={scss.cardTitle} component="h3">
+                  {card.title}
+                </Typography>
+                <Typography className={scss.cardDetail}>{card.detail}</Typography>
+              </div>
+            </div>
+
+            <DataChart data={card.data} options={doughnutOptions} type="doughnut" />
+
+            <div className={scss.cardFooter}>
+              <Typography className={scss.highlight}>{card.highlight}</Typography>
+              <Typography className={scss.footerLabel}>{card.label}</Typography>
+            </div>
           </Paper>
         </Grid>
       ))}

@@ -1,142 +1,209 @@
-import * as React from 'react';
+"use client";
 
-
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import EqualizerIcon from '@mui/icons-material/Equalizer';
+import * as React from "react";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import EqualizerIcon from "@mui/icons-material/Equalizer";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import HomeIcon from "@mui/icons-material/Home";
 import Person2Icon from "@mui/icons-material/Person2";
 import SettingsIcon from "@mui/icons-material/Settings";
-import Divider from '@mui/material/Divider';
-import MuiDrawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import type { CSSObject, Theme } from "@mui/material/styles";
-import { useTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
+import MuiDrawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
+import { alpha, useTheme } from "@mui/material/styles";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import scss from "./SideMenu.module.scss";
-import HomeIcon from "@mui/icons-material/Home";
 
+const drawerWidth = 248;
+const closedWidth = 72;
 
-const drawerWidth = 240;
-const Drawer = MuiDrawer;
-const openedMixin = (theme: Theme): CSSObject => ({
-  width: drawerWidth,
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.enteringScreen,
-  }),
-  overflowX: 'hidden',
-});
-
-const closedMixin = (theme: Theme): CSSObject => ({
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  overflowX: 'hidden',
-  width: `calc(${theme.spacing(7)} + 1px)`,
-});
-
-const menuRouteList = ["", "data", "profile", "settings", "logout"];
-const menuListTranslations = ["Home", "Data", "Profile", "Settings", "Sign Out"];
-
-const menuListIcons = [
-  <HomeIcon />,
-  <EqualizerIcon key="home" />,
-  <Person2Icon key="profile" />,
-  <SettingsIcon key="settings" />,
-  <ExitToAppIcon key="logout" />,
+const navigationItems = [
+  { href: "/dashboard", icon: <HomeIcon fontSize="small" />, label: "Overview" },
+  { href: "/dashboard/data", icon: <EqualizerIcon fontSize="small" />, label: "Data" },
+  { href: "/dashboard/profile", icon: <Person2Icon fontSize="small" />, label: "Profile" },
+  { href: "/dashboard/settings", icon: <SettingsIcon fontSize="small" />, label: "Settings" },
 ];
 
-
-
-
-
+const isActiveRoute = (pathname: string | null, href: string) => {
+  if (!pathname) return false;
+  if (href === "/dashboard") return pathname === "/dashboard";
+  return pathname.startsWith(href);
+};
 
 export default function SideMenu() {
-  // const tabletCheck = useMediaQuery("(min-width:600px)"); 
-    const theme = useTheme();
+  const theme = useTheme();
+  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const drawerSize = open ? drawerWidth : closedWidth;
 
-  const handleDrawerClose = () => {
-    setOpen(!open);
+  const handleDrawerToggle = () => {
+    setOpen((current) => !current);
   };
 
-const handleListItemButtonClick = (text: string) => {
-  text === "Sign Out" ? signOut() : setOpen(false);
-};
   return (
-    
-<MuiDrawer
-  variant="permanent"
-  anchor="left"
-  open={open}
-  sx={{
-    width: drawerWidth,
-    flexShrink: 0,
-    whiteSpace: "nowrap",
-    boxSizing: "border-box",
-  "& .MuiDrawer-paper": {
-  top: { xs: "56px", sm: "64px" },
-  height: { xs: "calc(100% - 56px)", sm: "calc(100% - 64px)" },
-  left: 0,
-  boxSizing: "border-box",
-
-  ...(open ? openedMixin(theme) : closedMixin(theme)),
-},
-  }}
->
-        <div className={scss.drawerHeader}>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+    <MuiDrawer
+      anchor="left"
+      open={open}
+      sx={{
+        boxSizing: "border-box",
+        flexShrink: 0,
+        whiteSpace: "nowrap",
+        width: drawerSize,
+        "& .MuiDrawer-paper": {
+          backgroundColor: "background.paper",
+          borderRight: "1px solid",
+          borderColor: "divider",
+          boxSizing: "border-box",
+          height: { xs: "calc(100% - 58px)", sm: "calc(100% - 66px)" },
+          left: 0,
+          overflowX: "hidden",
+          px: 1,
+          py: 1.25,
+          top: { xs: "58px", sm: "66px" },
+          transition: theme.transitions.create("width", {
+            duration: theme.transitions.duration.shorter,
+            easing: theme.transitions.easing.easeInOut,
+          }),
+          width: drawerSize,
+        },
+      }}
+      variant="permanent"
+    >
+      <div className={scss.drawerHeader}>
+        {open && (
+          <Typography className={scss.workspaceLabel}>Workspace</Typography>
+        )}
+        <Tooltip title={open ? "Collapse navigation" : "Expand navigation"}>
+          <IconButton aria-label="Toggle navigation" onClick={handleDrawerToggle} size="small">
+            {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
-        </div>
-        <Divider />
-       
-        <Divider />
-        <List>
-          {menuListTranslations.map((text, index) => (
-            <ListItem key={text} disablePadding sx={{ display: "block" }}>
-      <ListItemButton
-         component={text === "Sign Out" ? "button" : Link}
-  href={text === "Sign Out" ? undefined : `/dashboard/${menuRouteList[index]}`}
-  onClick={() => handleListItemButtonClick(text)}
-  title={text}
-  aria-label={text}
-        sx={{
-          minHeight: 48,
-          px: 1.9,
-          justifyContent: open ? "initial" : "center",
-        }}
-      >
-        <ListItemIcon
-          sx={{
-            minWidth: 0,
-            justifyContent: "center",
-            mr: open ? 3 : "auto",
-          }}
-        >
-          {menuListIcons[index]}
-        </ListItemIcon>
+        </Tooltip>
+      </div>
 
-        <ListItemText
-          primary={text}
-          sx={{
-            color: theme.palette.text.primary,
-            opacity: open ? 1 : 0,
-          }}
-        />
-      </ListItemButton>
-    </ListItem>
-          ))}
-        </List>
-      </MuiDrawer>
+      <Divider sx={{ my: 1 }} />
 
-  )
+      <List className={scss.navList} component="nav" aria-label="Dashboard navigation">
+        {navigationItems.map((item) => {
+          const selected = isActiveRoute(pathname, item.href);
+
+          return (
+            <ListItem key={item.label} disablePadding sx={{ display: "block" }}>
+              <Tooltip title={open ? "" : item.label} placement="right">
+                <ListItemButton
+                  aria-current={selected ? "page" : undefined}
+                  component={Link}
+                  href={item.href}
+                  selected={selected}
+                  sx={{
+                    borderRadius: "8px",
+                    color: selected ? "text.primary" : "text.secondary",
+                    justifyContent: open ? "initial" : "center",
+                    minHeight: 44,
+                    my: 0.35,
+                    px: open ? 1.5 : 1,
+                    position: "relative",
+                    transition:
+                      "background-color 160ms ease, color 160ms ease, transform 160ms ease",
+                    "&.Mui-selected": {
+                      backgroundColor: alpha(theme.palette.secondary.main, theme.palette.mode === "dark" ? 0.12 : 0.08),
+                    },
+                    "&.Mui-selected::before": {
+                      backgroundColor: "secondary.main",
+                      borderRadius: "999px",
+                      content: '""',
+                      height: 24,
+                      left: 4,
+                      position: "absolute",
+                      width: 3,
+                    },
+                    "&.Mui-selected:hover": {
+                      backgroundColor: alpha(theme.palette.secondary.main, theme.palette.mode === "dark" ? 0.16 : 0.11),
+                    },
+                    "&:hover": {
+                      backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === "dark" ? 0.08 : 0.05),
+                      color: "text.primary",
+                      transform: "translateX(1px)",
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      color: "inherit",
+                      justifyContent: "center",
+                      minWidth: 0,
+                      mr: open ? 1.5 : "auto",
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+
+                  <ListItemText
+                    primary={
+                      <Typography sx={{ fontSize: "0.9rem", fontWeight: selected ? 720 : 640 }}>
+                        {item.label}
+                      </Typography>
+                    }
+                    sx={{
+                      opacity: open ? 1 : 0,
+                    }}
+                  />
+                </ListItemButton>
+              </Tooltip>
+            </ListItem>
+          );
+        })}
+      </List>
+
+      <Box sx={{ mt: "auto" }}>
+        <Divider sx={{ my: 1 }} />
+        <Tooltip title={open ? "" : "Sign out"} placement="right">
+          <ListItemButton
+            aria-label="Sign out"
+            onClick={() => signOut()}
+            sx={{
+              borderRadius: "8px",
+              color: "text.secondary",
+              justifyContent: open ? "initial" : "center",
+              minHeight: 44,
+              px: open ? 1.5 : 1,
+              "&:hover": {
+                backgroundColor: alpha(theme.palette.error.main, theme.palette.mode === "dark" ? 0.16 : 0.09),
+                color: "error.main",
+              },
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                color: "inherit",
+                justifyContent: "center",
+                minWidth: 0,
+                mr: open ? 1.5 : "auto",
+              }}
+            >
+              <ExitToAppIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography sx={{ fontSize: "0.9rem", fontWeight: 650 }}>
+                  Sign out
+                </Typography>
+              }
+              sx={{ opacity: open ? 1 : 0 }}
+            />
+          </ListItemButton>
+        </Tooltip>
+      </Box>
+    </MuiDrawer>
+  );
 }

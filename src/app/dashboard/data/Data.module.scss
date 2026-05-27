@@ -1,0 +1,165 @@
+.dataPage {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 1520px;
+  min-height: 100vh;
+  padding: 96px 32px 44px 104px;
+  width: 100%;
+}
+
+.pageHeader {
+  align-items: end;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  color: #14b8a6;
+  font-size: 0.76rem;
+  font-weight: 780;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+.pageDescription {
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  font-size: clamp(0.98rem, 2vw, 1.06rem);
+  line-height: 1.65;
+  margin-top: 10px;
+  max-width: 720px;
+}
+
+.recordChip {
+  flex: 0 0 auto;
+}
+
+.tableCard {
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+}
+
+.tableToolbar {
+  align-items: center;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  padding: 18px;
+}
+
+.tableTitle {
+  font-size: 1rem;
+  font-weight: 740;
+  letter-spacing: 0;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.tableSubtitle {
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  margin-top: 6px;
+}
+
+.toolbarActions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+}
+
+.searchInput {
+  min-width: 260px;
+}
+
+.searchInput :global(.MuiOutlinedInput-root),
+.toolbarButton:global(.MuiButton-root) {
+  border-radius: 8px;
+}
+
+.toolbarButton:global(.MuiButton-root) {
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.filterCount {
+  align-items: center;
+  background: #14b8a6;
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.7rem;
+  font-weight: 760;
+  height: 18px;
+  justify-content: center;
+  line-height: 1;
+  margin-left: 4px;
+  min-width: 18px;
+  padding: 0 5px;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.gridShell {
+  height: 760px;
+  min-width: 900px;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .dataPage {
+    padding: 84px 16px 36px 84px;
+  }
+
+  .pageHeader,
+  .tableToolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .toolbarActions {
+    align-items: stretch;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .searchInput {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .toolbarButton:global(.MuiButton-root) {
+    flex: 1 1 0;
+  }
+
+  .gridShell {
+    height: 680px;
+  }
+}
+
+@media (max-width: 440px) {
+  .dataPage {
+    padding-left: 76px;
+    padding-right: 12px;
+  }
+
+  .tableToolbar {
+    padding: 16px;
+  }
+
+  .toolbarButton:global(.MuiButton-root) {
+    font-size: 0.78rem;
+  }
+}

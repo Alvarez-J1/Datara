@@ -1,205 +1,299 @@
 "use client";
 
-import Footer from "@/components/Footer/Footer";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import {
   Avatar,
-  Box,
   Button,
   Checkbox,
-  FormControlLabel,
-  Grid,
+  Chip,
   Paper,
   TextField,
   Typography,
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
+import Footer from "@/components/Footer/Footer";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
+import scss from "./Profile.module.scss";
+
+type ProfileFormData = {
+  confirmPassword: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  receiveEmails: boolean;
+};
+
+const getProfileDefaults = (
+  name?: string | null,
+  email?: string | null
+): ProfileFormData => {
+  const names = name ? name.split(" ") : [];
+
+  return {
+    confirmPassword: "",
+    email: email || "",
+    firstName: names[0] || "",
+    lastName: names.length > 1 ? names[names.length - 1] : "",
+    password: "",
+    receiveEmails: false,
+  };
+};
 
 export default function Profile() {
   const { data: session } = useSession();
-  const names = session?.user?.name
-  ? session.user.name.split(" ")
-  : [];
-
-const firstName = names[0] || "";
-const lastName = names.length > 1 ? names[names.length - 1] : "";
-const emailAddress = session?.user?.email || "";
-
-  const [formData, setFormData] = useState({
-    firstName: firstName,
-    lastName: lastName,
-    email: emailAddress || "",
-    password: "",
+  const theme = useTheme();
+  const [saved, setSaved] = useState(false);
+  const [formData, setFormData] = useState<Partial<ProfileFormData>>({
     confirmPassword: "",
+    password: "",
     receiveEmails: false,
   });
+  const sessionDefaults = getProfileDefaults(
+    session?.user?.name,
+    session?.user?.email
+  );
+  const visibleFormData: ProfileFormData = {
+    ...sessionDefaults,
+    ...formData,
+    confirmPassword: formData.confirmPassword ?? "",
+    password: formData.password ?? "",
+    receiveEmails: formData.receiveEmails ?? false,
+  };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleFormChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = event.target;
 
+    setSaved(false);
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSaved(true);
+    console.log("Profile saved:", visibleFormData);
+  };
+
+  const fieldStyles = {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "8px",
+      transition: "box-shadow 160ms ease, border-color 160ms ease",
+      "&:hover .MuiOutlinedInput-notchedOutline": {
+        borderColor: alpha(theme.palette.secondary.main, 0.55),
+      },
+      "&.Mui-focused": {
+        boxShadow: `0 0 0 3px ${alpha(theme.palette.secondary.main, 0.1)}`,
+      },
+      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+        borderColor: theme.palette.secondary.main,
+      },
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: theme.palette.secondary.main,
+    },
+  };
+
   return (
-   <Box
-  sx={{
-    px: { xs: 0, md: 3 },
-    pt: "80px",
-    minHeight: "100dvh",
-    display: "flex",
-    flexDirection: "column",
-    boxSizing: "border-box",
-  }}
->
-    
-<Box
-  sx={{
-    maxWidth: 1200,
-    mx: "auto",
-    width: "100%",
-    px: { xs: 2, md: "84px" },
-    pt: { xs: 2, md: "80px" },
-pl: { xs: "112px", md: "88px" },
-    display: "flex",
-    flexDirection: "column",
-    alignItems:  "stretch",
-  }}
->
-      <Typography variant="h4" sx={{ mb: 2, fontWeight: 700  }}>
-        Profile
-      </Typography>
+    <main className={scss.profilePage}>
+      <section className={scss.pageHeader}>
+        <div>
+          <Typography className={scss.eyebrow}>Account workspace</Typography>
+          <Typography component="h1" variant="h3">
+            Profile
+          </Typography>
+          <Typography className={scss.pageDescription}>
+            Manage your Datara identity, contact details, and account
+            preferences in one focused workspace.
+          </Typography>
+        </div>
 
-      <Typography variant="h6" sx={{ mb: 3 }}>
-        Hey {session?.user?.name || "User"}, welcome to your profile 👋
-      </Typography>
+        {saved && (
+          <Chip
+            className={scss.savedChip}
+            label="Profile updated"
+            size="small"
+            variant="outlined"
+          />
+        )}
+      </section>
 
-     <Paper
-  sx={{
-    width: "100%",
-    maxWidth: { xs: 360, sm: 520 },
-    mx: "auto",
-    p: { xs: 2, md: 5 },
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  }}
->
-        <Avatar
-          src={session?.user?.image || ""}
-          alt={session?.user?.name || "User"}
-          sx={{
-            width: 90,
-            height: 90,
-            mb: 3,
-            border: "3px solid",
-            borderColor: "primary.main",
-          }}
-        />
+      <Paper
+        className={scss.profileCard}
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          boxShadow:
+            theme.palette.mode === "dark"
+              ? "0 10px 24px rgba(0, 0, 0, 0.18)"
+              : "0 10px 24px rgba(15, 23, 42, 0.05)",
+        }}
+      >
+        <aside className={scss.profileSummary}>
+          <div className={scss.avatarWrap}>
+            <Avatar
+              alt={session?.user?.name || "User"}
+              className={scss.avatar}
+              src={session?.user?.image || ""}
+              sx={{
+                height: 96,
+                width: 96,
+              }}
+            />
+            <span className={scss.avatarStatus} aria-label="Active user" />
+          </div>
 
-        <Box component="form" sx={{ width: "100%", pb: 3  }}>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 6 }}>
+          <div>
+            <Typography className={scss.profileName}>
+              {session?.user?.name || "Datara user"}
+            </Typography>
+            <Typography className={scss.profileRole}>
+              Revenue analytics workspace
+            </Typography>
+          </div>
+
+          <div className={scss.metaList}>
+            <div className={scss.metaItem}>
+              <EmailOutlinedIcon fontSize="small" />
+              <span>{session?.user?.email || "No email available"}</span>
+            </div>
+            <div className={scss.metaItem}>
+              <ShieldOutlinedIcon fontSize="small" />
+              <span>Google OAuth protected</span>
+            </div>
+            <div className={scss.metaItem}>
+              <BadgeOutlinedIcon fontSize="small" />
+              <span>Workspace access active</span>
+            </div>
+          </div>
+        </aside>
+
+        <section className={scss.formSection}>
+          <div className={scss.sectionHeader}>
+            <div>
+              <Typography className={scss.sectionTitle} component="h2">
+                Personal information
+              </Typography>
+              <Typography className={scss.sectionDescription}>
+                Keep your profile information current for reporting, exports,
+                and workspace notifications.
+              </Typography>
+            </div>
+          </div>
+
+          <form className={scss.profileForm} onSubmit={handleSubmit}>
+            <div className={scss.formGrid}>
               <TextField
                 fullWidth
-                required
-                size="small"
-                label="First Name"
+                label="First name"
                 name="firstName"
-                value={formData.firstName}
                 onChange={handleFormChange}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
                 required
                 size="small"
-                label="Last Name"
+                sx={fieldStyles}
+                value={visibleFormData.firstName}
+              />
+
+              <TextField
+                fullWidth
+                label="Last name"
                 name="lastName"
-                value={formData.lastName}
                 onChange={handleFormChange}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
                 required
                 size="small"
+                sx={fieldStyles}
+                value={visibleFormData.lastName}
+              />
+
+              <TextField
+                className={scss.fullWidthField}
+                fullWidth
                 label="Email"
                 name="email"
-                value={formData.email}
                 onChange={handleFormChange}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
                 required
                 size="small"
-                type="password"
+                sx={fieldStyles}
+                type="email"
+                value={visibleFormData.email}
+              />
+
+              <TextField
+                fullWidth
                 label="Password"
                 name="password"
-                value={formData.password}
                 onChange={handleFormChange}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
                 required
                 size="small"
+                sx={fieldStyles}
                 type="password"
-                label="Confirm Password"
+                value={visibleFormData.password}
+              />
+
+              <TextField
+                fullWidth
+                label="Confirm password"
                 name="confirmPassword"
-                value={formData.confirmPassword}
                 onChange={handleFormChange}
+                required
+                size="small"
+                sx={fieldStyles}
+                type="password"
+                value={visibleFormData.confirmPassword}
               />
-            </Grid>
+            </div>
 
-            <Grid size={{ xs: 12 }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="receiveEmails"
-                    checked={formData.receiveEmails}
-                    onChange={handleFormChange}
-                    sx={{
-                      color: "grey.600",
-                      "&.Mui-checked": {
-                        color: "red",
-                      },
-                    }}
-                  />
-                }
-                label="Receive sales analytics emails"
+            <div className={scss.preferenceRow}>
+              <div>
+                <Typography className={scss.preferenceTitle}>
+                  Sales analytics emails
+                </Typography>
+                <Typography className={scss.preferenceDescription}>
+                  Receive product updates, weekly performance summaries, and
+                  account insights.
+                </Typography>
+              </div>
+              <Checkbox
+                checked={visibleFormData.receiveEmails}
+                name="receiveEmails"
+                onChange={handleFormChange}
+                slotProps={{
+                  input: { "aria-label": "Receive sales analytics emails" },
+                }}
+                sx={{
+                  color: "text.secondary",
+                  "&.Mui-checked": {
+                    color: "secondary.main",
+                  },
+                  "&.Mui-focusVisible": {
+                    outline: `3px solid ${alpha(theme.palette.secondary.main, 0.32)}`,
+                    outlineOffset: 2,
+                  },
+                }}
               />
-            </Grid>
+            </div>
 
-            <Grid size={{ xs: 12 }}>
-              <Button variant="contained" color="error" size="small">
-                Save Changes
+            <div className={scss.formActions}>
+              <Button
+                className={scss.saveButton}
+                startIcon={<SaveOutlinedIcon />}
+                type="submit"
+                variant="contained"
+              >
+                Save changes
               </Button>
-            </Grid>
-          </Grid>
-        </Box>
+            </div>
+          </form>
+        </section>
       </Paper>
+
       <Footer />
-      </Box>
-  
-      <Box sx={{ mt: "auto" }}>
-   <Box sx={{ display: { xs: "none", md: "block" } }}>
- 
-</Box>
-</Box>
-    </Box>
-   
-    
+    </main>
   );
 }

@@ -9,3 +9,7 @@ export default withAuth({
     newUser: "/auth/new-user",
   },
 });
+
+export const config = {
+  matcher: ["/dashboard/:path*"],
+};

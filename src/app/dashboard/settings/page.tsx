@@ -1,31 +1,147 @@
 "use client";
 
+import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
+import PaletteOutlinedIcon from "@mui/icons-material/PaletteOutlined";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import SpaceDashboardOutlinedIcon from "@mui/icons-material/SpaceDashboardOutlined";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import {
-  Box,
   Button,
-  FormControlLabel,
+  Chip,
+  Paper,
   Switch,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { alpha, useTheme } from "@mui/material/styles";
 import Footer from "@/components/Footer/Footer";
 import { useSession } from "next-auth/react";
-import scss from "../../Home.module.scss";
+import { type ChangeEvent, useState } from "react";
+import scss from "./Settings.module.scss";
 
-  
+type SettingsState = {
+  anomalyAlerts: boolean;
+  autoTheme: boolean;
+  compactMode: boolean;
+  customers: boolean;
+  emailDigest: boolean;
+  orders: boolean;
+  profit: boolean;
+  reducedMotion: boolean;
+  revenue: boolean;
+  weeklyReport: boolean;
+};
+
+type SettingItem = {
+  description: string;
+  key: keyof SettingsState;
+  label: string;
+};
+
+const dashboardPreferences: SettingItem[] = [
+  {
+    description: "Show recognized revenue and forecast progress on overview cards.",
+    key: "revenue",
+    label: "Revenue metrics",
+  },
+  {
+    description: "Surface margin and profitability signals in dashboard summaries.",
+    key: "profit",
+    label: "Profit insights",
+  },
+  {
+    description: "Include order volume, average order value, and conversion details.",
+    key: "orders",
+    label: "Order analytics",
+  },
+  {
+    description: "Show customer health, tier mix, and retention indicators.",
+    key: "customers",
+    label: "Customer signals",
+  },
+];
+
+const notifications: SettingItem[] = [
+  {
+    description: "Receive a concise revenue summary at the start of each week.",
+    key: "weeklyReport",
+    label: "Weekly performance report",
+  },
+  {
+    description: "Get notified when forecast, churn, or conversion signals move sharply.",
+    key: "anomalyAlerts",
+    label: "Anomaly alerts",
+  },
+  {
+    description: "Send a lightweight email digest with account and pipeline changes.",
+    key: "emailDigest",
+    label: "Email digest",
+  },
+];
+
+const appearance: SettingItem[] = [
+  {
+    description: "Use denser table and card spacing for repeated daily workflows.",
+    key: "compactMode",
+    label: "Compact dashboard density",
+  },
+  {
+    description: "Match the dashboard theme to your system preference when available.",
+    key: "autoTheme",
+    label: "Use system theme",
+  },
+  {
+    description: "Limit animated transitions for a calmer interface.",
+    key: "reducedMotion",
+    label: "Reduce motion",
+  },
+];
+
+const SettingRow = ({
+  checked,
+  description,
+  label,
+  name,
+  onChange,
+}: Omit<SettingItem, "key"> & {
+  checked: boolean;
+  name: keyof SettingsState;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}) => (
+  <div className={scss.settingRow}>
+    <div className={scss.settingCopy}>
+      <Typography className={scss.settingLabel}>{label}</Typography>
+      <Typography className={scss.settingDescription}>{description}</Typography>
+    </div>
+    <Switch
+      checked={checked}
+      name={name}
+      onChange={onChange}
+      slotProps={{ input: { "aria-label": label } }}
+    />
+  </div>
+);
 
 export default function Settings() {
   const { data: session } = useSession();
-  const [settings, setSettings] = useState({
-    revenue: true,
-    profit: true,
-    orders: true,
+  const theme = useTheme();
+  const [saved, setSaved] = useState(false);
+  const [settings, setSettings] = useState<SettingsState>({
+    anomalyAlerts: true,
+    autoTheme: false,
+    compactMode: false,
     customers: true,
+    emailDigest: false,
+    orders: true,
+    profit: true,
+    reducedMotion: false,
+    revenue: true,
+    weeklyReport: true,
   });
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = event.target;
 
+    setSaved(false);
     setSettings((prev) => ({
       ...prev,
       [name]: checked,
@@ -33,102 +149,202 @@ export default function Settings() {
   };
 
   const handleSubmit = () => {
+    setSaved(true);
     console.log("Settings saved:", settings);
   };
 
+  const activeDashboardSignals = dashboardPreferences.filter(
+    (item) => settings[item.key]
+  ).length;
+
   return (
-    <Box
-      component="main"
-      className={scss.main}
-      sx={{
-        boxSizing: "border-box",
-        width: "100%",
-        maxWidth: "100%",
-        minWidth: 0,
-        ...(session && {
-          pt: { xs: "72px", sm: "120px" },
-          pr: { xs: 1, sm: 2, md: "84px" },
-          pb: 0,
-          pl: { xs: 8, sm: 9, md: "88px" },
-        }),
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-         
+    <main className={scss.settingsPage}>
+      <section className={scss.pageHeader}>
+        <div>
+          <Typography className={scss.eyebrow}>Workspace controls</Typography>
+          <Typography component="h1" variant="h3">
+            Settings
+          </Typography>
+          <Typography className={scss.pageDescription}>
+            Tune your Datara workspace, reporting preferences, and dashboard
+            experience without leaving the analytics flow.
+          </Typography>
+        </div>
 
-     <Box sx={{ flex: 1 }}>
-    <Box sx={{ maxWidth: 1200, mx: "auto", pt: { xs: 2, sm: 0 } }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
-        Settings
-      </Typography>
-
-      <Typography variant="h5"  sx={{ mb: 2, fontWeight: 600 }}>
-        Dashboard Features
-      </Typography>
-
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
-        <FormControlLabel
-          control={
-            <Switch
-              name="revenue"
-              checked={settings.revenue}
-              onChange={handleChange}
-              color="error"
+        <div className={scss.headerActions}>
+          {saved && (
+            <Chip
+              className={scss.savedChip}
+              label="Changes saved"
+              size="small"
+              variant="outlined"
             />
-          }
-          label="Revenue"
-        />
+          )}
+          <Button
+            className={scss.saveButton}
+            onClick={handleSubmit}
+            startIcon={<SaveOutlinedIcon />}
+            variant="contained"
+          >
+            Save changes
+          </Button>
+        </div>
+      </section>
 
-        <FormControlLabel
-          control={
-            <Switch
-              name="profit"
-              checked={settings.profit}
-              onChange={handleChange}
-              color="error"
-            />
-          }
-          label="Profit"
-        />
+      <section className={scss.settingsGrid} aria-label="Datara settings">
+        <Paper
+          className={`${scss.settingsCard} ${scss.generalCard}`}
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            boxShadow:
+              theme.palette.mode === "dark"
+                ? "0 10px 24px rgba(0, 0, 0, 0.18)"
+                : "0 10px 24px rgba(15, 23, 42, 0.05)",
+          }}
+        >
+          <div className={scss.cardHeader}>
+            <span
+              className={scss.cardIcon}
+              style={{
+                backgroundColor: alpha(theme.palette.secondary.main, 0.07),
+                color: theme.palette.secondary.main,
+              }}
+            >
+              <TuneRoundedIcon fontSize="small" />
+            </span>
+            <div>
+              <Typography className={scss.cardTitle} component="h2">
+                General Settings
+              </Typography>
+              <Typography className={scss.cardDescription}>
+                Account context and workspace status.
+              </Typography>
+            </div>
+          </div>
 
-        <FormControlLabel
-          control={
-            <Switch
-              name="orders"
-              checked={settings.orders}
-              onChange={handleChange}
-              color="error"
-            />
-          }
-          label="Orders"
-        />
+          <div className={scss.profilePanel}>
+            <div>
+              <Typography className={scss.profileLabel}>Signed in as</Typography>
+              <Typography className={scss.profileName}>
+                {session?.user?.name ?? "Datara user"}
+              </Typography>
+              <Typography className={scss.profileEmail}>
+                {session?.user?.email ?? "No email available"}
+              </Typography>
+            </div>
+            <Chip label="Active workspace" size="small" variant="outlined" />
+          </div>
 
-        <FormControlLabel
-          control={
-            <Switch
-              name="customers"
-              checked={settings.customers}
-              onChange={handleChange}
-              color="error"
-            />
-          }
-          label="Customers"
-        />
-      </Box>
+          <div className={scss.summaryGrid}>
+            <div>
+              <Typography className={scss.summaryValue}>
+                {activeDashboardSignals}/4
+              </Typography>
+              <Typography className={scss.summaryLabel}>Signals enabled</Typography>
+            </div>
+            <div>
+              <Typography className={scss.summaryValue}>Weekly</Typography>
+              <Typography className={scss.summaryLabel}>Reporting cadence</Typography>
+            </div>
+          </div>
+        </Paper>
 
-      <Button variant="contained" color="error" onClick={handleSubmit}>
-        Save Settings
-      </Button>
-    
- 
+        <Paper
+          className={scss.settingsCard}
+          sx={{ border: "1px solid", borderColor: "divider" }}
+        >
+          <div className={scss.cardHeader}>
+            <span className={scss.cardIcon}>
+              <SpaceDashboardOutlinedIcon fontSize="small" />
+            </span>
+            <div>
+              <Typography className={scss.cardTitle} component="h2">
+                Dashboard Preferences
+              </Typography>
+              <Typography className={scss.cardDescription}>
+                Choose which analytics modules appear in the dashboard.
+              </Typography>
+            </div>
+          </div>
 
-    </Box>
-    </Box>
-  <Box sx={{ display: { xs: "none", md: "block" } }}>
-  <Footer />
-</Box>
-    </Box>
+          <div className={scss.settingList}>
+            {dashboardPreferences.map((item) => (
+              <SettingRow
+                {...item}
+                checked={settings[item.key]}
+                name={item.key}
+                onChange={handleChange}
+                key={item.key}
+              />
+            ))}
+          </div>
+        </Paper>
+
+        <Paper
+          className={scss.settingsCard}
+          sx={{ border: "1px solid", borderColor: "divider" }}
+        >
+          <div className={scss.cardHeader}>
+            <span className={scss.cardIcon}>
+              <NotificationsNoneRoundedIcon fontSize="small" />
+            </span>
+            <div>
+              <Typography className={scss.cardTitle} component="h2">
+                Notifications
+              </Typography>
+              <Typography className={scss.cardDescription}>
+                Control how Datara surfaces changes that need attention.
+              </Typography>
+            </div>
+          </div>
+
+          <div className={scss.settingList}>
+            {notifications.map((item) => (
+              <SettingRow
+                {...item}
+                checked={settings[item.key]}
+                name={item.key}
+                onChange={handleChange}
+                key={item.key}
+              />
+            ))}
+          </div>
+        </Paper>
+
+        <Paper
+          className={scss.settingsCard}
+          sx={{ border: "1px solid", borderColor: "divider" }}
+        >
+          <div className={scss.cardHeader}>
+            <span className={scss.cardIcon}>
+              <PaletteOutlinedIcon fontSize="small" />
+            </span>
+            <div>
+              <Typography className={scss.cardTitle} component="h2">
+                Appearance & Theming
+              </Typography>
+              <Typography className={scss.cardDescription}>
+                Adjust interface density and motion preferences.
+              </Typography>
+            </div>
+          </div>
+
+          <div className={scss.settingList}>
+            {appearance.map((item) => (
+              <SettingRow
+                {...item}
+                checked={settings[item.key]}
+                name={item.key}
+                onChange={handleChange}
+                key={item.key}
+              />
+            ))}
+          </div>
+        </Paper>
+      </section>
+
+      <Footer />
+    </main>
   );
 }

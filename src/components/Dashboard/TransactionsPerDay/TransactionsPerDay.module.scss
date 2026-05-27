@@ -1,57 +1,170 @@
-$breakPoint: 1000px;
-
-/* Do not set display on MUI Grid — conflicts with Grid2 and can shrink the row to content width. */
 .wrapper {
+  animation: fadeInUp 480ms ease 80ms both;
   width: 100%;
 }
 
 .transactions {
-  display: block;
-  padding: 1rem 2rem;
+  border: 1px solid;
+  border-color: var(--mui-palette-divider, rgba(15, 23, 42, 0.1));
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: hidden;
+  padding: clamp(20px, 3vw, 28px);
   width: 100%;
+}
 
-  @media screen and (min-width: $breakPoint) {
-    display: flex;
-  }
+.chartHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.kicker,
+.period,
+.railTitle,
+.insightLabel {
+  font-size: 0.74rem;
+  font-weight: 740;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.kicker {
+  color: #14b8a6;
+}
+
+.period {
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 8px;
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  flex: 0 0 auto;
+  padding: 8px 10px;
+}
+
+.title {
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  font-weight: 740;
+  letter-spacing: 0;
+  line-height: 1.12;
+  margin-top: 8px;
+  max-width: 720px;
+}
+
+.chartBody {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.28fr);
+  min-width: 0;
 }
 
 .chart {
-  max-width: 100%;
-  width: 100%;
-
-  @media screen and (min-width: $breakPoint) {
-    max-width: 80%;
-  }
+  min-width: 0;
 }
 
-.cardWrapper {
+.insightRail {
+  align-self: stretch;
+  border-left: 1px solid color-mix(in srgb, currentColor 10%, transparent);
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: 1rem;
-  max-width: 100%;
-  width: 100%;
-
-  @media screen and (min-width: $breakPoint) {
-    max-width: 20%;
-  }
+  gap: 14px;
+  padding-left: 24px;
 }
 
-.card {
-  text-align: center;
-  padding: 1rem;
+.railTitle {
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  margin-bottom: 2px;
+}
+
+.insightItem {
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
   border-radius: 8px;
-  width: 100%;
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
 
-  @media screen and (min-width: $breakPoint) {
-    padding: 0.5rem;
+  &:hover {
+    border-color: color-mix(in srgb, #14b8a6 28%, transparent);
+    transform: translateY(-1px);
   }
 }
 
-.cardTitle p {
-  font-size: 1.8rem;
+.insightLabel {
+  color: inherit;
 }
 
-.cardValue p {
-  font-size: 1.2rem;
+.insightContext {
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
+.insightNumbers {
+  align-items: flex-end;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.insightValue {
+  font-size: 1.35rem;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.insightChange {
+  color: #0f9f6e;
+  font-size: 0.78rem;
+  font-weight: 720;
+}
+
+@media (max-width: 1040px) {
+  .chartBody {
+    grid-template-columns: 1fr;
+  }
+
+  .insightRail {
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-left: 0;
+    padding-top: 20px;
+  }
+
+  .railTitle {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .chartHeader {
+    flex-direction: column;
+  }
+
+  .insightRail {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

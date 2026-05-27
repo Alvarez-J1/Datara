@@ -1,71 +1,94 @@
-import scss from "./TransactionsPerDay.module.scss";
-import { Card, Grid, Paper, Typography } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { Grid, Paper, Typography } from "@mui/material";
+import type { ChartConfiguration } from "chart.js";
 import DataChart from "@/components/DataChart/DataChart";
-import { lineChartData } from "@/components/mockData";
+import { revenueTrendData } from "@/components/mockData";
+import scss from "./TransactionsPerDay.module.scss";
+
+const revenueTrendOptions: ChartConfiguration["options"] = {
+  interaction: {
+    intersect: false,
+    mode: "index",
+  },
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      ticks: {
+        callback: (value: string | number) => `$${value}K`,
+      },
+    },
+  },
+};
+
+const insightMetrics = [
+  {
+    label: "Qualified pipeline",
+    value: "$1.42M",
+    change: "+22.8%",
+    context: "from 318 active opportunities",
+  },
+  {
+    label: "Sales cycle",
+    value: "18 days",
+    change: "-3.4 days",
+    context: "median time to paid conversion",
+  },
+  {
+    label: "Expansion revenue",
+    value: "$72.8K",
+    change: "+14.1%",
+    context: "from existing workspace upgrades",
+  },
+];
 
 const TransactionsPerDay = () => {
-  const theme = useTheme();
-
   return (
-    <Grid container spacing={2} className={scss.wrapper}>
-      <Grid size={12} sx={{ width: "100%", minWidth: 0 }}>
-        <Paper className={scss.transactions} sx={{ width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
-        <div className={scss.chart}>
-          <Typography>Transactions per day</Typography>
-          <DataChart type="line" data={lineChartData} />
-        </div>
-
-        <div className={scss.cardWrapper}>
-          <Card className={scss.card} variant="outlined">
-            <div className={scss.cardTitle}>
-              <Typography>Total Products</Typography>
-            </div>
-
-            <div className={scss.cardValue}>
-              <Typography>1.275</Typography>
-              <Typography
-                sx={{ fontSize: 14 }}
-                color={theme.palette.success.main}
-              >
-                428.7%
+    <Grid container className={scss.wrapper} spacing={2.5}>
+      <Grid size={12} sx={{ minWidth: 0, width: "100%" }}>
+        <Paper className={scss.transactions}>
+          <div className={scss.chartHeader}>
+            <div>
+              <Typography className={scss.kicker}>Revenue Trend</Typography>
+              <Typography className={scss.title} component="h2">
+                Net revenue is compounding ahead of forecast
               </Typography>
             </div>
-          </Card>
+            <Typography className={scss.period}>Jan-Dec 2026</Typography>
+          </div>
 
-          <Card className={scss.card} variant="outlined">
-            <div className={scss.cardTitle}>
-              <Typography>Buy-to-detail</Typography>
+          <div className={scss.chartBody}>
+            <div className={scss.chart}>
+              <DataChart
+                data={revenueTrendData}
+                options={revenueTrendOptions}
+                type="line"
+              />
             </div>
 
-            <div className={scss.cardValue}>
-              <Typography>4.40%</Typography>
-              <Typography
-                sx={{ fontSize: 14 }}
-                color={theme.palette.success.main}
-              >
-                899.4%
-              </Typography>
-            </div>
-          </Card>
-
-          <Card className={scss.card} variant="outlined">
-            <div className={scss.cardTitle}>
-              <Typography>Refunds</Typography>
-            </div>
-
-            <div className={scss.cardValue}>
-              <Typography>0</Typography>
-              <Typography
-                sx={{ fontSize: 14 }}
-                color={theme.palette.success.main}
-              >
-                0
-              </Typography>
-            </div>
-          </Card>
-        </div>
-      </Paper>
+            <aside className={scss.insightRail} aria-label="Revenue trend highlights">
+              <Typography className={scss.railTitle}>Pipeline metrics</Typography>
+              {insightMetrics.map((metric) => (
+                <div className={scss.insightItem} key={metric.label}>
+                  <div>
+                    <Typography className={scss.insightLabel}>{metric.label}</Typography>
+                    <Typography className={scss.insightContext}>
+                      {metric.context}
+                    </Typography>
+                  </div>
+                  <div className={scss.insightNumbers}>
+                    <Typography className={scss.insightValue}>{metric.value}</Typography>
+                    <Typography className={scss.insightChange}>
+                      {metric.change}
+                    </Typography>
+                  </div>
+                </div>
+              ))}
+            </aside>
+          </div>
+        </Paper>
       </Grid>
     </Grid>
   );

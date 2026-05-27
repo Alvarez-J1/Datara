@@ -12,9 +12,12 @@ const Footer = () => {
     <footer className={scss.footer}>
       <Paper
         sx={{
-          width: "100%",
-          p: 2,
           backgroundColor: "background.paper",
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: "8px",
+          p: { xs: 1.5, sm: 2 },
+          width: "100%",
         }}
       >
         <ul className={scss.footerList}>

@@ -1,17 +1,131 @@
-.topCardsContainer {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  padding-top: 90px;
-  padding-left: 90px;
-  padding-right: 24px;
-  
+.authPage {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 96px 24px 48px;
+}
 
-  @media screen and (min-width: 768px) {
-    grid-template-columns: 1fr 1fr 1fr;
+.dashboardPage {
+  margin: 0 auto;
+  max-width: 1520px;
+  min-height: 100vh;
+  padding: 96px 32px 44px 104px;
+  width: 100%;
+}
+
+.dashboardHero {
+  align-items: end;
+  animation: fadeInUp 360ms ease both;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  margin-bottom: 28px;
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
+.eyebrow {
+  color: #14b8a6;
+  font-size: 0.76rem;
+  font-weight: 780;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.heroText {
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  font-size: clamp(0.98rem, 2vw, 1.06rem);
+  line-height: 1.65;
+  margin-top: 12px;
+  max-width: 760px;
+}
+
+.heroPanel {
+  background: color-mix(in srgb, currentColor 3%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.statusRow {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.statusDot {
+  background: #14b8a6;
+  border-radius: 999px;
+  height: 8px;
+  width: 8px;
+}
+
+.statusLabel {
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  font-size: 0.78rem;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.heroPanelValue {
+  font-size: 2.1rem;
+  font-weight: 780;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.heroPanelText {
+  color: color-mix(in srgb, currentColor 60%, transparent);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.dashboardStack {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1120px) {
+  .dashboardHero {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .heroPanel {
+    max-width: 420px;
   }
 }
 
-.dataCard {
-  padding: 20px;
+@media (max-width: 720px) {
+  .dashboardPage {
+    padding: 84px 16px 36px 84px;
+  }
+}
+
+@media (max-width: 440px) {
+  .dashboardPage {
+    padding-left: 76px;
+    padding-right: 12px;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

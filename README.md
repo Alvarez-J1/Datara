@@ -35,13 +35,14 @@ React • Next.js • TypeScript  • Material UI • Chart.js • Sass/SCSS •
 
 ## Screenshots
 ## Desktop View
-<img width="1920" height="922" alt="Screenshot 2026-05-01 141824" src="https://github.com/user-attachments/assets/8d3bbb74-1e7b-4fa0-89e0-6ac3642a94fa" />
+<img width="1901" height="909" alt="datara" src="https://github.com/user-attachments/assets/ca264924-58fe-40c2-b69b-a50e4de20b05" />
+
 
 ## Data Page
-<img width="1920" height="963" alt="Screenshot 2026-05-02 021526" src="https://github.com/user-attachments/assets/31a34cac-596d-4ba6-8903-f6a3b9eba553" />
+<img width="1899" height="912" alt="image" src="https://github.com/user-attachments/assets/38d160bb-c14f-475d-a703-fbe6798548ff" />
 
 ## Mobile View
-<img width="428" height="765" alt="image" src="https://github.com/user-attachments/assets/038876df-a8cd-43ec-bbc4-ad29f03057b3" />
+<img width="503" height="773" alt="image" src="https://github.com/user-attachments/assets/2fd75501-140e-4185-b9ad-fd8897d4fab9" />
 
 ## Getting Started
 

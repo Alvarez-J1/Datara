@@ -5,8 +5,8 @@ import scss from "./DataRibbon.module.scss";
 const metrics: DataCardProps[] = [
   {
     accent: "#14b8a6",
-    context: "Pacing 6.2% above the quarterly plan",
-    description: "Recognized revenue across paid Datara workspaces this quarter.",
+    context: "Revenue tracking 6.2% above plan",
+    description: "Total revenue from active customer accounts this quarter.",
     title: "Net Revenue",
     trend: "+18.4%",
     trendLabel: "vs previous quarter",
@@ -14,8 +14,8 @@ const metrics: DataCardProps[] = [
   },
   {
     accent: "#2563eb",
-    context: "1,842 paid workspace orders closed",
-    description: "Completed purchases and renewals from sales assisted and self-serve channels.",
+    context: "1,842 orders processed in the last 90 days",
+    description: "Completed purchases across self-serve and sales channels.",
     title: "Orders",
     trend: "+12.7%",
     trendLabel: "trailing 90 days",
@@ -23,8 +23,8 @@ const metrics: DataCardProps[] = [
   },
   {
     accent: "#f59e0b",
-    context: "$38.90 lift from enterprise bundles",
-    description: "Average revenue captured per successful checkout and renewal.",
+    context: "$38.90 increase from bundled plans",
+    description: "Average revenue generated per completed order.",
     title: "Avg. Order Value",
     trend: "+7.9%",
     trendLabel: "month over month",
@@ -32,8 +32,8 @@ const metrics: DataCardProps[] = [
   },
   {
     accent: "#f43f5e",
-    context: "Checkout quality improved after pricing page updates",
-    description: "The share of qualified visits that converted into a paid workspace.",
+    context: "Conversion rate improved after pricing changes",
+    description: "Percentage of visitors who upgraded to a paid workspace.",
     title: "Conversion",
     trend: "+2.1%",
     trendLabel: "last 30 days",

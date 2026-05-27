@@ -75,6 +75,7 @@
   display: flex;
   flex: 0 0 auto;
   gap: 10px;
+  justify-content: flex-end;
 }
 
 .searchInput {
@@ -87,7 +88,9 @@
 }
 
 .toolbarButton:global(.MuiButton-root) {
+  max-width: 148px;
   min-height: 40px;
+  width: fit-content;
   white-space: nowrap;
 }
 
@@ -130,18 +133,19 @@
   }
 
   .toolbarActions {
-    align-items: stretch;
+    align-items: center;
     flex-wrap: wrap;
     width: 100%;
   }
 
   .searchInput {
-    flex: 1 1 100%;
+    flex: 1 1 320px;
+    max-width: 420px;
     min-width: 0;
   }
 
   .toolbarButton:global(.MuiButton-root) {
-    flex: 1 1 0;
+    flex: 0 0 auto;
   }
 
   .gridShell {
@@ -161,5 +165,29 @@
 
   .toolbarButton:global(.MuiButton-root) {
     font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .toolbarActions {
+    align-items: stretch;
+  }
+
+  .searchInput {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .toolbarButton:global(.MuiButton-root) {
+    flex: 1 1 calc(50% - 5px);
+    max-width: none;
+    width: auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .toolbarButton:global(.MuiButton-root) {
+    flex-basis: 100%;
+    width: 100%;
   }
 }

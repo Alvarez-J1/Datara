@@ -28,6 +28,8 @@ const getPageLabel = (pathname: string | null) => {
   if (!pathname || pathname === "/dashboard") return "Overview";
 
   const label = pathname.split("/").filter(Boolean).pop() ?? "Overview";
+  if (label === "signin") return "Sign in";
+
   return label.charAt(0).toUpperCase() + label.slice(1);
 };
 
@@ -196,7 +198,9 @@ const Header = () => {
                     borderColor: "divider",
                     color: "text.primary",
                     gap: 1,
+                    maxWidth: { xs: 72, sm: 260, md: 300 },
                     minWidth: 0,
+                    overflow: "hidden",
                     px: { xs: 0.5, sm: 1 },
                     py: 0.45,
                   }}
@@ -269,7 +273,12 @@ const Header = () => {
               </Menu>
             </Box>
           ) : (
-            <Button color="primary" onClick={() => signIn("google")} variant="contained">
+            <Button
+              color="primary"
+              onClick={() => signIn("google")}
+              sx={{ minHeight: 40, px: { xs: 1.5, sm: 2 } }}
+              variant="contained"
+            >
               Sign in
             </Button>
           )}

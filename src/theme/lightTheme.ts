@@ -84,7 +84,9 @@ const lightTheme: ThemeOptions = {
       styleOverrides: {
         root: {
           borderRadius: "8px",
+          minWidth: "auto",
           textTransform: "none",
+          whiteSpace: "nowrap",
         },
       },
     },

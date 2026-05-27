@@ -39,12 +39,12 @@ type SettingItem = {
 
 const dashboardPreferences: SettingItem[] = [
   {
-    description: "Show recognized revenue and forecast progress on overview cards.",
+    description: "Show revenue and forecast progress on overview cards.",
     key: "revenue",
     label: "Revenue metrics",
   },
   {
-    description: "Surface margin and profitability signals in dashboard summaries.",
+    description: "Show profit and margin metrics in dashboard summaries.",
     key: "profit",
     label: "Profit insights",
   },
@@ -54,9 +54,9 @@ const dashboardPreferences: SettingItem[] = [
     label: "Order analytics",
   },
   {
-    description: "Show customer health, tier mix, and retention indicators.",
+    description: "Show customer retention and account health metrics.",
     key: "customers",
-    label: "Customer signals",
+    label: "Customer metrics",
   },
 ];
 
@@ -67,12 +67,12 @@ const notifications: SettingItem[] = [
     label: "Weekly performance report",
   },
   {
-    description: "Get notified when forecast, churn, or conversion signals move sharply.",
+    description: "Get alerts when revenue or conversion trends change sharply.",
     key: "anomalyAlerts",
     label: "Anomaly alerts",
   },
   {
-    description: "Send a lightweight email digest with account and pipeline changes.",
+    description: "Receive a weekly summary of account and pipeline activity.",
     key: "emailDigest",
     label: "Email digest",
   },
@@ -80,7 +80,7 @@ const notifications: SettingItem[] = [
 
 const appearance: SettingItem[] = [
   {
-    description: "Use denser table and card spacing for repeated daily workflows.",
+    description: "Reduce spacing in tables and cards for denser layouts.",
     key: "compactMode",
     label: "Compact dashboard density",
   },
@@ -90,7 +90,7 @@ const appearance: SettingItem[] = [
     label: "Use system theme",
   },
   {
-    description: "Limit animated transitions for a calmer interface.",
+    description: "Reduce interface animations and transitions.",
     key: "reducedMotion",
     label: "Reduce motion",
   },
@@ -166,8 +166,7 @@ export default function Settings() {
             Settings
           </Typography>
           <Typography className={scss.pageDescription}>
-            Tune your Datara workspace, reporting preferences, and dashboard
-            experience without leaving the analytics flow.
+          Tune your workspace preferences and dashboard settings.
           </Typography>
         </div>
 
@@ -233,7 +232,7 @@ export default function Settings() {
                 {session?.user?.email ?? "No email available"}
               </Typography>
             </div>
-            <Chip label="Active workspace" size="small" variant="outlined" />
+    
           </div>
 
           <div className={scss.summaryGrid}>
@@ -263,7 +262,7 @@ export default function Settings() {
                 Dashboard Preferences
               </Typography>
               <Typography className={scss.cardDescription}>
-                Choose which analytics modules appear in the dashboard.
+              Choose which metrics appear across the dashboard.
               </Typography>
             </div>
           </div>
@@ -294,7 +293,7 @@ export default function Settings() {
                 Notifications
               </Typography>
               <Typography className={scss.cardDescription}>
-                Control how Datara surfaces changes that need attention.
+              Manage alerts and update notifications.
               </Typography>
             </div>
           </div>
@@ -325,7 +324,7 @@ export default function Settings() {
                 Appearance & Theming
               </Typography>
               <Typography className={scss.cardDescription}>
-                Adjust interface density and motion preferences.
+              Customize dashboard appearance and motion preferences.
               </Typography>
             </div>
           </div>

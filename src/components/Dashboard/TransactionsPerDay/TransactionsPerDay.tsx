@@ -53,7 +53,7 @@ const TransactionsPerDay = () => {
             <div>
               <Typography className={scss.kicker}>Revenue Trend</Typography>
               <Typography className={scss.title} component="h2">
-                Net revenue is compounding ahead of forecast
+              Revenue growth is outperforming projections
               </Typography>
             </div>
             <Typography className={scss.period}>Jan-Dec 2026</Typography>

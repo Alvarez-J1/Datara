@@ -197,8 +197,10 @@
 }
 
 .saveButton:global(.MuiButton-root) {
+  max-width: 220px;
   min-height: 42px;
   min-width: 156px;
+  width: fit-content;
   white-space: nowrap;
 }
 
@@ -242,6 +244,7 @@
   }
 
   .saveButton:global(.MuiButton-root) {
+    max-width: none;
     width: 100%;
   }
 }

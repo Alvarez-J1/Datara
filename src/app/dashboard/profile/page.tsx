@@ -104,7 +104,7 @@ export default function Profile() {
     <main className={scss.profilePage}>
       <section className={scss.pageHeader}>
         <div>
-          <Typography className={scss.eyebrow}>Account workspace</Typography>
+          <Typography className={scss.eyebrow}>ACCOUNT SETTINGS</Typography>
           <Typography component="h1" variant="h3">
             Profile
           </Typography>
@@ -154,7 +154,7 @@ export default function Profile() {
               {session?.user?.name || "Datara user"}
             </Typography>
             <Typography className={scss.profileRole}>
-              Revenue analytics workspace
+            Revenue analytics dashboard
             </Typography>
           </div>
 
@@ -169,7 +169,7 @@ export default function Profile() {
             </div>
             <div className={scss.metaItem}>
               <BadgeOutlinedIcon fontSize="small" />
-              <span>Workspace access active</span>
+              <span>Workspace access enabled</span>
             </div>
           </div>
         </aside>
@@ -252,7 +252,7 @@ export default function Profile() {
             <div className={scss.preferenceRow}>
               <div>
                 <Typography className={scss.preferenceTitle}>
-                  Sales analytics emails
+                Email updates
                 </Typography>
                 <Typography className={scss.preferenceDescription}>
                   Receive product updates, weekly performance summaries, and

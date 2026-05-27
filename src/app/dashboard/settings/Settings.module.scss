@@ -39,6 +39,7 @@
   display: flex;
   flex: 0 0 auto;
   gap: 10px;
+  justify-content: flex-end;
 }
 
 .savedChip {
@@ -46,7 +47,10 @@
 }
 
 .saveButton:global(.MuiButton-root) {
+  max-width: 220px;
   min-height: 42px;
+  min-width: 154px;
+  width: fit-content;
   white-space: nowrap;
 }
 
@@ -225,13 +229,13 @@
   }
 
   .headerActions {
-    align-items: stretch;
+    align-items: center;
     flex-wrap: wrap;
     width: 100%;
   }
 
   .saveButton:global(.MuiButton-root) {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
   }
 
   .settingsGrid {
@@ -240,6 +244,15 @@
 }
 
 @media (max-width: 560px) {
+  .headerActions {
+    align-items: stretch;
+  }
+
+  .saveButton:global(.MuiButton-root) {
+    max-width: none;
+    width: 100%;
+  }
+
   .settingsCard {
     padding: 18px;
   }

@@ -2,54 +2,73 @@
 
 import { useEffect, useRef } from "react";
 import { Chart, ChartConfiguration, registerables } from "chart.js";
+import type { ChartTypeRegistry } from "chart.js";
 import { darkOptions, lightOptions } from "@/components/DataChart/Themes";
 import { useTheme } from "@mui/material/styles";
 
 Chart.register(...registerables);
 
-const mergeChartOptions = (
-  base: ChartConfiguration["options"] = {},
-  override: ChartConfiguration["options"] = {}
-): ChartConfiguration["options"] => {
-  const hasScales = Boolean(base.scales || override.scales);
+type ChartOptions<TType extends keyof ChartTypeRegistry> = NonNullable<
+  ChartConfiguration<TType>["options"]
+>;
+
+const mergeChartOptions = <TType extends keyof ChartTypeRegistry>(
+  base?: ChartConfiguration<TType>["options"],
+  override?: ChartConfiguration<TType>["options"]
+): ChartOptions<TType> => {
+  const baseOptions = (base ?? {}) as ChartOptions<TType>;
+  const overrideOptions = (override ?? {}) as ChartOptions<TType>;
+  const hasScales = Boolean(baseOptions.scales || overrideOptions.scales);
 
   return {
-    ...base,
-    ...override,
+    ...baseOptions,
+    ...overrideOptions,
     plugins: {
-      ...base.plugins,
-      ...override.plugins,
+      ...baseOptions.plugins,
+      ...overrideOptions.plugins,
       legend: {
-        ...base.plugins?.legend,
-        ...override.plugins?.legend,
+        ...baseOptions.plugins?.legend,
+        ...overrideOptions.plugins?.legend,
         labels: {
-          ...base.plugins?.legend?.labels,
-          ...override.plugins?.legend?.labels,
+          ...baseOptions.plugins?.legend?.labels,
+          ...overrideOptions.plugins?.legend?.labels,
         },
       },
       tooltip: {
-        ...base.plugins?.tooltip,
-        ...override.plugins?.tooltip,
+        ...baseOptions.plugins?.tooltip,
+        ...overrideOptions.plugins?.tooltip,
       },
     },
     ...(hasScales && {
       scales: {
-        ...base.scales,
-        ...override.scales,
+        ...baseOptions.scales,
+        ...overrideOptions.scales,
         x: {
-          ...((base.scales?.x ?? {}) as object),
-          ...((override.scales?.x ?? {}) as object),
+          ...((baseOptions.scales?.x ?? {}) as object),
+          ...((overrideOptions.scales?.x ?? {}) as object),
         },
         y: {
-          ...((base.scales?.y ?? {}) as object),
-          ...((override.scales?.y ?? {}) as object),
+          ...((baseOptions.scales?.y ?? {}) as object),
+          ...((overrideOptions.scales?.y ?? {}) as object),
         },
       },
     }),
-  };
+  } as ChartOptions<TType>;
 };
 
-const DataChart = ({ data, options, plugins, type }: ChartConfiguration) => {
+type DataChartProps<TType extends keyof ChartTypeRegistry> = {
+  type: TType;
+  data: ChartConfiguration<TType>["data"];
+  options?: ChartConfiguration<TType>["options"];
+  plugins?: ChartConfiguration<TType>["plugins"];
+};
+
+const DataChart = <TType extends keyof ChartTypeRegistry>({
+  data,
+  options,
+  plugins,
+  type,
+}: DataChartProps<TType>) => {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const theme = useTheme();
   const minHeight = type === "doughnut" || type === "pie" ? 224 : 332;
@@ -73,7 +92,10 @@ const DataChart = ({ data, options, plugins, type }: ChartConfiguration) => {
       options: {
         maintainAspectRatio: false,
         responsive: true,
-        ...mergeChartOptions(themedOptions, options),
+        ...mergeChartOptions<TType>(
+          (themedOptions ?? {}) as NonNullable<ChartConfiguration<TType>["options"]>,
+          (options ?? {}) as NonNullable<ChartConfiguration<TType>["options"]>
+        ),
       },
       plugins,
       type,

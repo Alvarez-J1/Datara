@@ -8,7 +8,6 @@ import {
   Button,
   Chip,
   InputAdornment,
-  LinearProgress,
   Paper,
   TextField,
   Typography,
@@ -16,25 +15,516 @@ import {
 import { alpha, useTheme } from "@mui/material/styles";
 import {
   DataGrid,
+  GridColDef,
   GridFilterModel,
   GridLogicOperator,
   useGridApiRef,
 } from "@mui/x-data-grid";
-import { useDemoData } from "@mui/x-data-grid-generator";
 import Footer from "@/components/Footer/Footer";
 import { type ChangeEvent, useState } from "react";
 import scss from "./Data.module.scss";
 
-const ROW_LENGTH = 500;
+type RevenueRecord = {
+  active: string;
+  completion: string;
+  currency: string;
+  customerEmail: string;
+  customerName: string;
+  discountAmount: string;
+  discountRate: string;
+  id: number;
+  planPrice: string;
+  planTier: string;
+  product: string;
+  region: string;
+  revenue: string;
+  seats: number;
+  segment: string;
+  status: "Active" | "At Risk" | "Cancelled" | "Completed" | "Open";
+  workspaceId: string;
+};
+
+const revenueRows: RevenueRecord[] = [
+  {
+    active: "Yes",
+    completion: "96%",
+    currency: "USD",
+    customerEmail: "finance@auroralabs.io",
+    customerName: "Aurora Labs",
+    discountAmount: "$53,426",
+    discountRate: "8%",
+    id: 1001,
+    planPrice: "$4,800",
+    planTier: "Enterprise",
+    product: "Enterprise Plan",
+    region: "North America",
+    revenue: "$614,400",
+    seats: 128,
+    segment: "Strategic",
+    status: "Active",
+    workspaceId: "WS-1042",
+  },
+  {
+    active: "Yes",
+    completion: "88%",
+    currency: "USD",
+    customerEmail: "ops@northstarhealth.com",
+    customerName: "Northstar Health",
+    discountAmount: "$18,240",
+    discountRate: "5%",
+    id: 1002,
+    planPrice: "$3,200",
+    planTier: "Business",
+    product: "Business Plan",
+    region: "North America",
+    revenue: "$364,800",
+    seats: 114,
+    segment: "Mid-Market",
+    status: "Active",
+    workspaceId: "WS-1187",
+  },
+  {
+    active: "Yes",
+    completion: "72%",
+    currency: "USD",
+    customerEmail: "admin@lumaretail.co",
+    customerName: "Luma Retail",
+    discountAmount: "$6,720",
+    discountRate: "7%",
+    id: 1003,
+    planPrice: "$1,600",
+    planTier: "Pro",
+    product: "Pro Plan",
+    region: "North America",
+    revenue: "$96,000",
+    seats: 60,
+    segment: "SMB",
+    status: "Open",
+    workspaceId: "WS-1220",
+  },
+  {
+    active: "Yes",
+    completion: "100%",
+    currency: "USD",
+    customerEmail: "revops@heliosystems.ai",
+    customerName: "Helio Systems",
+    discountAmount: "$22,560",
+    discountRate: "6%",
+    id: 1004,
+    planPrice: "$4,700",
+    planTier: "Enterprise",
+    product: "Forecasting Add-on",
+    region: "Europe",
+    revenue: "$376,000",
+    seats: 80,
+    segment: "Enterprise",
+    status: "Completed",
+    workspaceId: "WS-1265",
+  },
+  {
+    active: "Yes",
+    completion: "67%",
+    currency: "USD",
+    customerEmail: "billing@brightpath.io",
+    customerName: "BrightPath",
+    discountAmount: "$3,360",
+    discountRate: "4%",
+    id: 1005,
+    planPrice: "$1,400",
+    planTier: "Pro",
+    product: "Analytics Add-on",
+    region: "North America",
+    revenue: "$84,000",
+    seats: 60,
+    segment: "SMB",
+    status: "At Risk",
+    workspaceId: "WS-1311",
+  },
+  {
+    active: "No",
+    completion: "18%",
+    currency: "USD",
+    customerEmail: "accounts@evergreenlegal.com",
+    customerName: "Evergreen Legal",
+    discountAmount: "$1,440",
+    discountRate: "3%",
+    id: 1006,
+    planPrice: "$1,200",
+    planTier: "Starter",
+    product: "Starter Plan",
+    region: "North America",
+    revenue: "$48,000",
+    seats: 40,
+    segment: "SMB",
+    status: "Cancelled",
+    workspaceId: "WS-1368",
+  },
+  {
+    active: "Yes",
+    completion: "91%",
+    currency: "EUR",
+    customerEmail: "data@novafinance.eu",
+    customerName: "Nova Finance",
+    discountAmount: "€14,400",
+    discountRate: "5%",
+    id: 1007,
+    planPrice: "€3,600",
+    planTier: "Business",
+    product: "Reporting Suite",
+    region: "Europe",
+    revenue: "€288,000",
+    seats: 80,
+    segment: "Mid-Market",
+    status: "Active",
+    workspaceId: "WS-1404",
+  },
+  {
+    active: "Yes",
+    completion: "82%",
+    currency: "USD",
+    customerEmail: "platform@cartwheel.app",
+    customerName: "Cartwheel",
+    discountAmount: "$9,600",
+    discountRate: "4%",
+    id: 1008,
+    planPrice: "$2,000",
+    planTier: "Business",
+    product: "API Access",
+    region: "North America",
+    revenue: "$240,000",
+    seats: 120,
+    segment: "Mid-Market",
+    status: "Active",
+    workspaceId: "WS-1459",
+  },
+  {
+    active: "Yes",
+    completion: "54%",
+    currency: "USD",
+    customerEmail: "hello@grainline.studio",
+    customerName: "Grainline Studio",
+    discountAmount: "$960",
+    discountRate: "2%",
+    id: 1009,
+    planPrice: "$800",
+    planTier: "Starter",
+    product: "Team Seats",
+    region: "North America",
+    revenue: "$48,000",
+    seats: 60,
+    segment: "SMB",
+    status: "Open",
+    workspaceId: "WS-1502",
+  },
+  {
+    active: "Yes",
+    completion: "94%",
+    currency: "USD",
+    customerEmail: "ops@meridiancloud.com",
+    customerName: "Meridian Cloud",
+    discountAmount: "$39,936",
+    discountRate: "8%",
+    id: 1010,
+    planPrice: "$5,200",
+    planTier: "Enterprise",
+    product: "Enterprise Plan",
+    region: "APAC",
+    revenue: "$499,200",
+    seats: 96,
+    segment: "Enterprise",
+    status: "Active",
+    workspaceId: "WS-1540",
+  },
+  {
+    active: "Yes",
+    completion: "76%",
+    currency: "USD",
+    customerEmail: "admin@clearwatercrm.com",
+    customerName: "Clearwater CRM",
+    discountAmount: "$7,680",
+    discountRate: "5%",
+    id: 1011,
+    planPrice: "$2,400",
+    planTier: "Business",
+    product: "Business Plan",
+    region: "North America",
+    revenue: "$153,600",
+    seats: 64,
+    segment: "Mid-Market",
+    status: "Active",
+    workspaceId: "WS-1596",
+  },
+  {
+    active: "Yes",
+    completion: "63%",
+    currency: "GBP",
+    customerEmail: "revops@atlaslabs.uk",
+    customerName: "Atlas Labs",
+    discountAmount: "£4,224",
+    discountRate: "4%",
+    id: 1012,
+    planPrice: "£1,760",
+    planTier: "Pro",
+    product: "Pro Plan",
+    region: "Europe",
+    revenue: "£105,600",
+    seats: 60,
+    segment: "SMB",
+    status: "At Risk",
+    workspaceId: "WS-1633",
+  },
+  {
+    active: "Yes",
+    completion: "99%",
+    currency: "USD",
+    customerEmail: "team@orbitanalytics.com",
+    customerName: "Orbit Analytics",
+    discountAmount: "$16,128",
+    discountRate: "6%",
+    id: 1013,
+    planPrice: "$4,200",
+    planTier: "Enterprise",
+    product: "Forecasting Add-on",
+    region: "North America",
+    revenue: "$268,800",
+    seats: 64,
+    segment: "Enterprise",
+    status: "Completed",
+    workspaceId: "WS-1681",
+  },
+  {
+    active: "Yes",
+    completion: "87%",
+    currency: "USD",
+    customerEmail: "billing@signalstack.dev",
+    customerName: "SignalStack",
+    discountAmount: "$2,016",
+    discountRate: "3%",
+    id: 1014,
+    planPrice: "$1,400",
+    planTier: "Pro",
+    product: "Analytics Add-on",
+    region: "North America",
+    revenue: "$67,200",
+    seats: 48,
+    segment: "SMB",
+    status: "Active",
+    workspaceId: "WS-1708",
+  },
+  {
+    active: "Yes",
+    completion: "79%",
+    currency: "USD",
+    customerEmail: "finance@pillarops.com",
+    customerName: "Pillar Ops",
+    discountAmount: "$12,096",
+    discountRate: "6%",
+    id: 1015,
+    planPrice: "$2,800",
+    planTier: "Business",
+    product: "Reporting Suite",
+    region: "LATAM",
+    revenue: "$201,600",
+    seats: 72,
+    segment: "Mid-Market",
+    status: "Active",
+    workspaceId: "WS-1742",
+  },
+  {
+    active: "No",
+    completion: "31%",
+    currency: "USD",
+    customerEmail: "owner@sproutdesk.com",
+    customerName: "Sproutdesk",
+    discountAmount: "$720",
+    discountRate: "2%",
+    id: 1016,
+    planPrice: "$900",
+    planTier: "Starter",
+    product: "Starter Plan",
+    region: "North America",
+    revenue: "$36,000",
+    seats: 40,
+    segment: "SMB",
+    status: "Cancelled",
+    workspaceId: "WS-1801",
+  },
+  {
+    active: "Yes",
+    completion: "92%",
+    currency: "USD",
+    customerEmail: "admin@blueharbor.io",
+    customerName: "Blue Harbor",
+    discountAmount: "$27,648",
+    discountRate: "6%",
+    id: 1017,
+    planPrice: "$4,800",
+    planTier: "Enterprise",
+    product: "Enterprise Plan",
+    region: "North America",
+    revenue: "$460,800",
+    seats: 96,
+    segment: "Enterprise",
+    status: "Active",
+    workspaceId: "WS-1844",
+  },
+  {
+    active: "Yes",
+    completion: "70%",
+    currency: "USD",
+    customerEmail: "growth@kineticlabs.ai",
+    customerName: "Kinetic Labs",
+    discountAmount: "$5,760",
+    discountRate: "4%",
+    id: 1018,
+    planPrice: "$2,400",
+    planTier: "Business",
+    product: "API Access",
+    region: "APAC",
+    revenue: "$144,000",
+    seats: 60,
+    segment: "Mid-Market",
+    status: "Open",
+    workspaceId: "WS-1905",
+  },
+  {
+    active: "Yes",
+    completion: "84%",
+    currency: "EUR",
+    customerEmail: "workspace@sonarworks.eu",
+    customerName: "Sonar Works",
+    discountAmount: "€9,792",
+    discountRate: "6%",
+    id: 1019,
+    planPrice: "€2,550",
+    planTier: "Business",
+    product: "Business Plan",
+    region: "Europe",
+    revenue: "€163,200",
+    seats: 64,
+    segment: "Mid-Market",
+    status: "Active",
+    workspaceId: "WS-1946",
+  },
+  {
+    active: "Yes",
+    completion: "58%",
+    currency: "USD",
+    customerEmail: "accounts@terracotta.co",
+    customerName: "Terracotta",
+    discountAmount: "$1,920",
+    discountRate: "3%",
+    id: 1020,
+    planPrice: "$1,600",
+    planTier: "Pro",
+    product: "Pro Plan",
+    region: "North America",
+    revenue: "$64,000",
+    seats: 40,
+    segment: "SMB",
+    status: "At Risk",
+    workspaceId: "WS-2002",
+  },
+  {
+    active: "Yes",
+    completion: "97%",
+    currency: "USD",
+    customerEmail: "systems@vectorly.com",
+    customerName: "Vectorly",
+    discountAmount: "$11,520",
+    discountRate: "5%",
+    id: 1021,
+    planPrice: "$3,000",
+    planTier: "Business",
+    product: "Team Seats",
+    region: "North America",
+    revenue: "$230,400",
+    seats: 96,
+    segment: "Mid-Market",
+    status: "Completed",
+    workspaceId: "WS-2064",
+  },
+  {
+    active: "Yes",
+    completion: "81%",
+    currency: "USD",
+    customerEmail: "finance@opalcommerce.com",
+    customerName: "Opal Commerce",
+    discountAmount: "$14,112",
+    discountRate: "7%",
+    id: 1022,
+    planPrice: "$2,800",
+    planTier: "Business",
+    product: "Reporting Suite",
+    region: "North America",
+    revenue: "$201,600",
+    seats: 72,
+    segment: "Mid-Market",
+    status: "Active",
+    workspaceId: "WS-2109",
+  },
+  {
+    active: "No",
+    completion: "44%",
+    currency: "USD",
+    customerEmail: "support@redwoodapps.com",
+    customerName: "Redwood Apps",
+    discountAmount: "$2,016",
+    discountRate: "4%",
+    id: 1023,
+    planPrice: "$1,050",
+    planTier: "Starter",
+    product: "Starter Plan",
+    region: "North America",
+    revenue: "$50,400",
+    seats: 48,
+    segment: "SMB",
+    status: "Cancelled",
+    workspaceId: "WS-2148",
+  },
+  {
+    active: "Yes",
+    completion: "90%",
+    currency: "USD",
+    customerEmail: "admin@summitgrowth.com",
+    customerName: "Summit Growth",
+    discountAmount: "$38,400",
+    discountRate: "8%",
+    id: 1024,
+    planPrice: "$5,000",
+    planTier: "Enterprise",
+    product: "Enterprise Plan",
+    region: "North America",
+    revenue: "$480,000",
+    seats: 96,
+    segment: "Strategic",
+    status: "Active",
+    workspaceId: "WS-2200",
+  },
+];
+
+const revenueColumns: GridColDef<RevenueRecord>[] = [
+  { field: "customerName", headerName: "Customer Name", minWidth: 180, flex: 1.1 },
+  { field: "customerEmail", headerName: "Customer Email", minWidth: 220, flex: 1.2 },
+  { field: "workspaceId", headerName: "Workspace ID", minWidth: 130 },
+  { field: "product", headerName: "Product / Plan", minWidth: 180, flex: 1 },
+  { field: "planTier", headerName: "Plan Tier", minWidth: 130 },
+  { field: "seats", headerName: "Seats", type: "number", minWidth: 90 },
+  { field: "completion", headerName: "Engagement", minWidth: 130 },
+  { field: "active", headerName: "Active", minWidth: 95 },
+  { field: "planPrice", headerName: "Plan Price", minWidth: 125 },
+  { field: "currency", headerName: "Currency", minWidth: 105 },
+  { field: "revenue", headerName: "Revenue", minWidth: 130 },
+  { field: "discountRate", headerName: "Discount Rate", minWidth: 135 },
+  { field: "discountAmount", headerName: "Discount Amount", minWidth: 155 },
+  { field: "region", headerName: "Region", minWidth: 140 },
+  { field: "segment", headerName: "Segment", minWidth: 130 },
+  { field: "status", headerName: "Status", minWidth: 120 },
+];
 
 const Data = () => {
   const apiRef = useGridApiRef();
   const theme = useTheme();
-  const { data, loading } = useDemoData({
-    dataSet: "Commodity",
-    rowLength: ROW_LENGTH,
-    maxColumns: 15,
-  });
   const [filterModel, setFilterModel] = useState<GridFilterModel>({
     items: [],
     quickFilterLogicOperator: GridLogicOperator.Or,
@@ -68,19 +558,18 @@ const Data = () => {
     <main className={scss.dataPage}>
       <section className={scss.pageHeader}>
         <div>
-          <Typography className={scss.eyebrow}>Datara Data Warehouse</Typography>
+          <Typography className={scss.eyebrow}>REVENUE DATA</Typography>
           <Typography component="h1" variant="h3">
             Data
           </Typography>
           <Typography className={scss.pageDescription}>
-            Explore the underlying records powering your revenue analytics
-            workspace.
+          Browse and manage the records behind your revenue dashboard.
           </Typography>
         </div>
 
         <Chip
           className={scss.recordChip}
-          label={`${(data.rows.length || ROW_LENGTH).toLocaleString()} records`}
+          label={`${revenueRows.length.toLocaleString()} records`}
           variant="outlined"
         />
       </section>
@@ -99,10 +588,10 @@ const Data = () => {
         <div className={scss.tableToolbar}>
           <div>
             <Typography className={scss.tableTitle} component="h2">
-              Commodity records
+              Revenue records
             </Typography>
             <Typography className={scss.tableSubtitle}>
-              Search, filter, select, and export operational data.
+            Search, filter, and export workspace revenue records.
             </Typography>
           </div>
 
@@ -110,7 +599,7 @@ const Data = () => {
             <TextField
               className={scss.searchInput}
               onChange={handleSearchChange}
-              placeholder="Search records"
+              placeholder="Search customers or plans"
               size="small"
               slotProps={{
                 input: {
@@ -138,7 +627,6 @@ const Data = () => {
 
             <Button
               className={scss.toolbarButton}
-              disabled={loading}
               onClick={handleExport}
               startIcon={<FileDownloadOutlinedIcon />}
               variant="outlined"
@@ -151,22 +639,18 @@ const Data = () => {
         <div className={scss.tableScroll}>
           <Box className={scss.gridShell}>
             <DataGrid
-              {...data}
               apiRef={apiRef}
               checkboxSelection
+              columns={revenueColumns}
               disableRowSelectionOnClick
               filterModel={filterModel}
-              loading={loading}
               onFilterModelChange={setFilterModel}
               pageSizeOptions={[10, 25, 50]}
+              rows={revenueRows}
               initialState={{
-                ...data.initialState,
                 pagination: {
                   paginationModel: { pageSize: 25, page: 0 },
                 },
-              }}
-              slots={{
-                loadingOverlay: () => <LinearProgress />,
               }}
               sx={{
                 "--DataGrid-containerBackground":

@@ -2,7 +2,7 @@
 Datara is a responsive front-end sales analytics dashboard built with Next.js, React, TypeScript, Material UI, and Chart.js.
 The project focuses on clean UI, dashboard-style layouts, interactive data visualization, responsive design, and modern front-end architecture.
 
-<img width="1901" height="909" alt="datara" src="https://github.com/user-attachments/assets/ca264924-58fe-40c2-b69b-a50e4de20b05" />
+<img width="1899" height="916" alt="datara1" src="https://github.com/user-attachments/assets/426bdeaa-4383-46c8-ac1f-ecec5b267464" />
 
 ## Live Demo
 
@@ -35,11 +35,12 @@ React • Next.js • TypeScript  • Material UI • Chart.js • Sass/SCSS •
 
 ## Screenshots
 ## Desktop View
-<img width="1901" height="909" alt="datara" src="https://github.com/user-attachments/assets/ca264924-58fe-40c2-b69b-a50e4de20b05" />
+<img width="1899" height="916" alt="datara1" src="https://github.com/user-attachments/assets/0887baa4-6363-41e0-8d6f-39f9251016e1" />
+
 
 
 ## Data Page
-<img width="1899" height="912" alt="image" src="https://github.com/user-attachments/assets/38d160bb-c14f-475d-a703-fbe6798548ff" />
+<img width="1896" height="914" alt="Screenshot 2026-06-09 092208" src="https://github.com/user-attachments/assets/c4a4459c-8491-48b9-b668-674abef6cbf5" />
 
 ## Mobile View
 <img width="503" height="773" alt="image" src="https://github.com/user-attachments/assets/2fd75501-140e-4185-b9ad-fd8897d4fab9" />

@@ -214,6 +214,14 @@ const formatDelta = (
 
   const magnitude = formatPercent(Math.abs(kpi.deltaPercent));
 
+  // A raw delta can be a hair off zero (e.g. -0.02%) and still round to "0%"
+  // at display precision. Showing a signed "-0%"/"+0%" in that case reads as
+  // a bug, so once the displayed magnitude itself is zero, always render it
+  // as a plain, neutral "0%" regardless of the raw UP/DOWN direction.
+  if (isZeroMagnitude(magnitude)) {
+    return { trend: "0%", trendTone: "neutral" };
+  }
+
   if (kpi.deltaDirection === "UP") {
     return { trend: `+${magnitude}`, trendTone: "positive" };
   }
@@ -223,6 +231,11 @@ const formatDelta = (
   }
 
   return { trend: magnitude, trendTone: "neutral" };
+};
+
+const isZeroMagnitude = (formattedPercent: string): boolean => {
+  const numericValue = Number(formattedPercent.replace("%", ""));
+  return Number.isFinite(numericValue) && numericValue === 0;
 };
 
 const formatValue = (kind: CardKind, value: number): string => {

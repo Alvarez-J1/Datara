@@ -126,6 +126,7 @@
 
 .tableScroll {
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   width: 100%;
 }
 

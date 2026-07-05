@@ -1,8 +1,8 @@
 "use client";
 
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import FilterListRoundedIcon from "@mui/icons-material/FilterListRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import dynamic from "next/dynamic";
 import {
   Box,
   Button,
@@ -13,8 +13,6 @@ import {
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import {
-  DataGrid,
-  GRID_CHECKBOX_SELECTION_COL_DEF,
   GridColDef,
   GridFilterModel,
   GridLogicOperator,
@@ -34,6 +32,11 @@ import { useUserSettings, type DefaultTimeRange } from "@/lib/api/settings";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import scss from "./Data.module.scss";
 
+const DataGrid = dynamic(
+  () => import("@mui/x-data-grid").then((module) => module.DataGrid),
+  { ssr: false }
+) as typeof import("@mui/x-data-grid").DataGrid;
+
 type RevenueGridRow = {
   accountOwner: string;
   amount: number;
@@ -45,18 +48,19 @@ type RevenueGridRow = {
   status: RevenueStatus;
 };
 
-// Region, Status, Revenue, and Date are fixed-width (their content has a
-// predictable max length, so a fixed pixel width is the correct choice).
-// Customer Name, Customer Segment, and Account Owner instead use `flex` with
-// a floor `minWidth`, so any leftover container width is distributed
-// proportionally across those three instead of leaving a blank gap after the
-// last column or over-stretching a single column.
+const checkboxColumn = {
+  maxWidth: 50,
+  minWidth: 50,
+  resizable: false,
+  width: 50,
+};
+
 const revenueColumns: GridColDef<RevenueGridRow>[] = [
   {
     align: "left",
     field: "customerName",
     filterable: false,
-    flex: 1.6,
+    flex: 1.55,
     headerAlign: "left",
     headerName: "Customer Name",
     minWidth: 220,
@@ -66,70 +70,65 @@ const revenueColumns: GridColDef<RevenueGridRow>[] = [
     align: "left",
     field: "region",
     filterable: false,
+    flex: 0.9,
     headerAlign: "left",
     headerName: "Region",
+    minWidth: 140,
     sortable: false,
-    width: 160,
   },
   {
     align: "left",
     field: "customerSegment",
     filterable: false,
-    flex: 1,
+    flex: 1.05,
     headerAlign: "left",
     headerName: "Customer Segment",
-    minWidth: 160,
+    minWidth: 150,
     sortable: false,
   },
   {
     align: "left",
     field: "accountOwner",
     filterable: false,
-    flex: 1,
+    flex: 1.05,
     headerAlign: "left",
     headerName: "Account Owner",
-    minWidth: 160,
+    minWidth: 150,
     sortable: false,
   },
   {
     align: "left",
     field: "amount",
     filterable: false,
+    flex: 0.8,
     headerAlign: "left",
     headerName: "Revenue",
+    minWidth: 128,
     sortable: true,
     type: "number",
     valueFormatter: (value: number) => formatCurrency(value),
-    width: 140,
   },
   {
     align: "left",
     field: "status",
+    flex: 0.75,
     headerAlign: "left",
     headerName: "Status",
+    minWidth: 112,
     sortable: true,
     type: "singleSelect",
     valueOptions: ["LEAD", "NEGOTIATION", "WON", "LOST"],
-    width: 120,
   },
   {
-    align: "right",
+    align: "left",
     field: "date",
-    headerAlign: "right",
+    flex: 0.85,
+    headerAlign: "left",
     headerName: "Date",
+    minWidth: 126,
     sortable: true,
     valueFormatter: (value: string) => formatDate(value),
-    width: 140,
   },
-];
-
-// DataGrid auto-injects a checkbox column (via `checkboxSelection`) sized by
-// `GRID_CHECKBOX_SELECTION_COL_DEF`. Spreading that default and overriding
-// just its width keeps its built-in selection behavior while giving it the
-// same explicit, fixed-width treatment as every other column.
-const dataGridColumns: GridColDef<RevenueGridRow>[] = [
-  { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 48 } as GridColDef<RevenueGridRow>,
-  ...revenueColumns,
 ];
 
 const Data = () => {
@@ -154,9 +153,6 @@ const Data = () => {
     quickFilterValues: [],
   });
   const searchValue = String(filterModel.quickFilterValues?.[0] ?? "");
-  const activeFilterCount =
-    filterModel.items.filter((item) => item.value != null && item.value !== "")
-      .length + (searchValue ? 1 : 0);
 
   const query = useMemo(
     () => buildRevenueQuery(paginationModel, sortModel, filterModel, settings?.defaultTimeRange),
@@ -227,10 +223,6 @@ const Data = () => {
     }));
   };
 
-  const handleOpenFilters = () => {
-    apiRef.current?.showFilterPanel();
-  };
-
   const handleExport = () => {
     apiRef.current?.exportDataAsCsv({
       fileName: "datara-data-export",
@@ -272,7 +264,7 @@ const Data = () => {
               Revenue records
             </Typography>
             <Typography className={scss.tableSubtitle}>
-            Search, filter, and export workspace revenue records.
+            Search and export workspace revenue records.
             </Typography>
           </div>
 
@@ -280,7 +272,7 @@ const Data = () => {
             <TextField
               className={scss.searchInput}
               onChange={handleSearchChange}
-              placeholder="Search customers or plans"
+              placeholder="Search customers"
               size="small"
               slotProps={{
                 input: {
@@ -293,18 +285,6 @@ const Data = () => {
               }}
               value={searchValue}
             />
-
-            <Button
-              className={scss.toolbarButton}
-              onClick={handleOpenFilters}
-              startIcon={<FilterListRoundedIcon />}
-              variant="outlined"
-            >
-              Filters
-              {activeFilterCount > 0 && (
-                <span className={scss.filterCount}>{activeFilterCount}</span>
-              )}
-            </Button>
 
             <Button
               className={scss.toolbarButton}
@@ -322,9 +302,13 @@ const Data = () => {
             <DataGrid
               apiRef={apiRef}
               checkboxSelection
+              checkboxColDef={checkboxColumn}
               columnHeaderHeight={compactMode ? 48 : 56}
-              columns={dataGridColumns}
+              columns={revenueColumns}
               density={compactMode ? "compact" : "standard"}
+              disableColumnFilter
+              disableColumnMenu
+              disableColumnResize
               disableRowSelectionOnClick
               filterMode="server"
               filterModel={filterModel}
@@ -363,6 +347,9 @@ const Data = () => {
                     theme.palette.mode === "dark"
                       ? alpha(theme.palette.common.white, 0.03)
                       : alpha(theme.palette.grey[100], 0.82),
+                },
+                "& .MuiDataGrid-columnSeparator": {
+                  display: "none",
                 },
                 "& .MuiDataGrid-columnHeader:not(.MuiDataGrid-columnHeaderCheckbox)": {
                   paddingLeft: "24px",
@@ -440,11 +427,6 @@ const buildRevenueQuery = (
   defaultTimeRange?: DefaultTimeRange
 ): RevenueRecordQuery => {
   const sort = sortModel[0];
-  const dateRange = getDateRange(filterModel);
-  // An explicit date-column filter on the grid always wins; the saved
-  // dashboard range is only applied as a default when the person hasn't set
-  // their own date filter.
-  const hasExplicitDateFilter = Boolean(dateRange.startDate || dateRange.endDate);
 
   return {
     page: paginationModel.page,
@@ -452,9 +434,7 @@ const buildRevenueQuery = (
     search: getSearchFilter(filterModel),
     sortBy: getSortField(sort?.field),
     sortDirection: sort?.sort === "asc" ? "asc" : "desc",
-    status: getStatusFilter(filterModel),
-    range: hasExplicitDateFilter ? undefined : defaultTimeRange,
-    ...dateRange,
+    range: defaultTimeRange,
   };
 };
 
@@ -470,39 +450,6 @@ const getSortField = (
 const getSearchFilter = (filterModel: GridFilterModel): string | undefined => {
   const value = String(filterModel.quickFilterValues?.[0] ?? "").trim();
   return value || undefined;
-};
-
-const getStatusFilter = (
-  filterModel: GridFilterModel
-): RevenueStatus | undefined => {
-  const status = filterModel.items.find((item) => item.field === "status")?.value;
-  return isRevenueStatus(status) ? status : undefined;
-};
-
-const getDateRange = (
-  filterModel: GridFilterModel
-): Pick<RevenueRecordQuery, "startDate" | "endDate"> => {
-  return filterModel.items.reduce<Pick<RevenueRecordQuery, "startDate" | "endDate">>(
-    (range, item) => {
-      if (item.field !== "date" || !item.value) {
-        return range;
-      }
-
-      const value = String(item.value);
-      const operator = String(item.operator ?? "").toLowerCase();
-
-      if (operator.includes("after") || operator.includes(">")) {
-        return { ...range, startDate: value };
-      }
-
-      if (operator.includes("before") || operator.includes("<")) {
-        return { ...range, endDate: value };
-      }
-
-      return { startDate: value, endDate: value };
-    },
-    {}
-  );
 };
 
 const isRevenueStatus = (value: unknown): value is RevenueStatus => {

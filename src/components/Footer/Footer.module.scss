@@ -46,11 +46,16 @@
   .footerList {
     align-items: center;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    width: 100%;
   }
 
   .footerList li {
     font-size: 0.76rem;
+    line-height: 1.35;
     padding: 0;
+    text-align: center;
+    white-space: normal;
+    width: 100%;
   }
 }

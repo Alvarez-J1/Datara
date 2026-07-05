@@ -21,10 +21,13 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,8 +42,60 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class SampleDataService {
 
-    private static final int MONTH_COUNT = 12;
+    // 24 months, not 12: the dashboard's KPI badges compare each selected
+    // range (30 days / 90 days / 12 months) against the equal-length period
+    // immediately before it. A 12-month range needs a full previous 12-month
+    // window to compare against - 24 months back from today - or that prior
+    // window is empty and every KPI looks like "New" even though it isn't.
+    private static final int MONTH_COUNT = 24;
     private static final int DEFAULT_RANDOM_SEED = 42;
+
+    // How many brand-new customer identities get "acquired" each month, on
+    // top of whichever ones already exist. Deals are drawn from whatever
+    // customer pool has been acquired so far, not from the full name space
+    // up front - otherwise the distinct-customer count would be flat no
+    // matter the selected time window instead of growing with it.
+    private static final int NEW_CUSTOMERS_PER_MONTH = 6;
+
+    // Chance a deal goes to a customer who was already active last month
+    // instead of a uniformly random pick from the whole acquired pool - see
+    // pickCustomerName() for why this matters for retention.
+    private static final double REPEAT_CUSTOMER_PROBABILITY = 0.55;
+
+    private static final List<String> CUSTOMER_NAME_PREFIXES = List.of(
+        "Aurora",
+        "Northstar",
+        "Luma",
+        "Helio",
+        "BrightPath",
+        "Evergreen",
+        "Nova",
+        "Cartwheel",
+        "Grainline",
+        "Meridian",
+        "Clearwater",
+        "Atlas",
+        "Orbit",
+        "SignalStack",
+        "Pillar",
+        "Summit",
+        "Kinetic",
+        "Sonar",
+        "Vectorly",
+        "Opal"
+    );
+    private static final List<String> CUSTOMER_NAME_SUFFIXES = List.of(
+        "Labs",
+        "Health",
+        "Retail",
+        "Systems",
+        "Cloud",
+        "Legal",
+        "Finance",
+        "Commerce",
+        "Studio",
+        "Analytics"
+    );
 
     private final AcquisitionSourceRepository acquisitionSourceRepository;
     private final CustomerSegmentRepository customerSegmentRepository;
@@ -109,11 +164,27 @@ public class SampleDataService {
         Random random
     ) {
         List<RevenueRecord> records = new ArrayList<>();
+        List<String> customerPool = buildShuffledCustomerPool(random);
+        List<String> acquiredCustomers = new ArrayList<>();
+        int nextPoolIndex = 0;
+        List<String> previousMonthCustomers = new ArrayList<>();
+        Set<String> currentMonthCustomers = new HashSet<>();
 
         for (int monthOffset = 0; monthOffset < MONTH_COUNT; monthOffset++) {
             YearMonth yearMonth = YearMonth.from(firstMonth.plusMonths(monthOffset));
             int dealsThisMonth = 18 + (monthOffset % 5);
             BigDecimal seasonalMultiplier = seasonalMultiplier(yearMonth);
+
+            int newCustomersThisMonth = Math.min(
+                NEW_CUSTOMERS_PER_MONTH,
+                customerPool.size() - nextPoolIndex
+            );
+            for (int i = 0; i < newCustomersThisMonth; i++) {
+                acquiredCustomers.add(customerPool.get(nextPoolIndex++));
+            }
+
+            previousMonthCustomers = new ArrayList<>(currentMonthCustomers);
+            currentMonthCustomers = new HashSet<>();
 
             for (int dealIndex = 0; dealIndex < dealsThisMonth; dealIndex++) {
                 RevenueStatus status = pickStatus(monthOffset, dealIndex, random);
@@ -122,10 +193,16 @@ public class SampleDataService {
                 LocalDate dealDate = yearMonth.atDay(
                     1 + random.nextInt(yearMonth.lengthOfMonth())
                 );
+                String customerName = pickCustomerName(
+                    acquiredCustomers,
+                    previousMonthCustomers,
+                    random
+                );
+                currentMonthCustomers.add(customerName);
 
                 records.add(RevenueRecord.builder()
                     .user(user)
-                    .customerName(customerName(monthOffset, dealIndex))
+                    .customerName(customerName)
                     .amount(amount)
                     .status(status)
                     .date(dealDate)
@@ -135,6 +212,45 @@ public class SampleDataService {
         }
 
         return records;
+    }
+
+    /**
+     * Weights deals toward customers who were already active last month
+     * (real repeat business) rather than drawing purely uniformly from the
+     * whole acquired pool. Without this, month-over-month retention would
+     * always compute to 0% once the pool grows past a couple dozen names -
+     * a customer reappearing in back-to-back months by pure chance becomes
+     * vanishingly unlikely, even though the total customer count still (and
+     * correctly) grows with a wider date range.
+     */
+    private String pickCustomerName(
+        List<String> acquiredCustomers,
+        List<String> previousMonthCustomers,
+        Random random
+    ) {
+        if (!previousMonthCustomers.isEmpty() && random.nextDouble() < REPEAT_CUSTOMER_PROBABILITY) {
+            return previousMonthCustomers.get(random.nextInt(previousMonthCustomers.size()));
+        }
+
+        return acquiredCustomers.get(random.nextInt(acquiredCustomers.size()));
+    }
+
+    /**
+     * All prefix/suffix combinations, shuffled with the user's own seeded
+     * Random so customer "acquisition order" is deterministic per user but
+     * not tied to the prefix/suffix list order.
+     */
+    private List<String> buildShuffledCustomerPool(Random random) {
+        List<String> pool = new ArrayList<>();
+
+        for (String prefix : CUSTOMER_NAME_PREFIXES) {
+            for (String suffix : CUSTOMER_NAME_SUFFIXES) {
+                pool.add(prefix + " " + suffix);
+            }
+        }
+
+        Collections.shuffle(pool, random);
+        return pool;
     }
 
     private Map<YearMonth, BigDecimal> calculateMonthlyWonRevenue(
@@ -312,48 +428,6 @@ public class SampleDataService {
             return BigDecimal.valueOf(0.88);
         }
         return BigDecimal.ONE;
-    }
-
-    private String customerName(int monthOffset, int dealIndex) {
-        String[] prefixes = {
-            "Aurora",
-            "Northstar",
-            "Luma",
-            "Helio",
-            "BrightPath",
-            "Evergreen",
-            "Nova",
-            "Cartwheel",
-            "Grainline",
-            "Meridian",
-            "Clearwater",
-            "Atlas",
-            "Orbit",
-            "SignalStack",
-            "Pillar",
-            "Summit",
-            "Kinetic",
-            "Sonar",
-            "Vectorly",
-            "Opal"
-        };
-        String[] suffixes = {
-            "Labs",
-            "Health",
-            "Retail",
-            "Systems",
-            "Cloud",
-            "Legal",
-            "Finance",
-            "Commerce",
-            "Studio",
-            "Analytics"
-        };
-
-        int prefixIndex = Math.floorMod(monthOffset * 7 + dealIndex, prefixes.length);
-        int suffixIndex = Math.floorMod(monthOffset + dealIndex * 3, suffixes.length);
-
-        return prefixes[prefixIndex] + " " + suffixes[suffixIndex];
     }
 
     private AcquisitionSource acquisitionSource(

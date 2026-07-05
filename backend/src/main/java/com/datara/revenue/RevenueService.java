@@ -137,11 +137,19 @@ public class RevenueService {
         return "date";
     }
 
+    /**
+     * Builds the full "%term%" LIKE pattern here in Java rather than via
+     * concat() in the JPQL query. Real PostgreSQL can reject the query-side
+     * concat(:search) form when :search is null - Hibernate sends the null
+     * parameter as bytea instead of text in that context ("operator does not
+     * exist: text ~~ bytea"), a mismatch H2 (used in dev) doesn't catch.
+     * Passing the finished pattern (or null) avoids concat() entirely.
+     */
     private String normalizeSearch(String search) {
         if (search == null || search.isBlank()) {
             return null;
         }
-        return search.trim().toLowerCase();
+        return "%" + search.trim().toLowerCase() + "%";
     }
 
     private Sort.Direction normalizeSortDirection(String sortDirection) {

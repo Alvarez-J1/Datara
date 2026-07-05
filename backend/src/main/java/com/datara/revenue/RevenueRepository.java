@@ -237,7 +237,7 @@ public interface RevenueRepository extends JpaRepository<RevenueRecord, Long> {
         select r
         from RevenueRecord r
         where r.user.id = :userId
-          and (:search is null or lower(r.customerName) like concat('%', :search, '%'))
+          and (:search is null or lower(r.customerName) like :search)
           and (:status is null or r.status = :status)
           and (:startDate is null or r.date >= :startDate)
           and (:endDate is null or r.date <= :endDate)

@@ -10,6 +10,7 @@ import {
   Paper,
   TextField,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import {
@@ -55,7 +56,7 @@ const checkboxColumn = {
   width: 50,
 };
 
-const revenueColumns: GridColDef<RevenueGridRow>[] = [
+const desktopRevenueColumns: GridColDef<RevenueGridRow>[] = [
   {
     align: "left",
     field: "customerName",
@@ -131,9 +132,81 @@ const revenueColumns: GridColDef<RevenueGridRow>[] = [
   },
 ];
 
+const scrollableRevenueColumns: GridColDef<RevenueGridRow>[] = [
+  {
+    align: "left",
+    field: "customerName",
+    filterable: false,
+    headerAlign: "left",
+    headerName: "Customer Name",
+    sortable: false,
+    width: 240,
+  },
+  {
+    align: "left",
+    field: "region",
+    filterable: false,
+    headerAlign: "left",
+    headerName: "Region",
+    sortable: false,
+    width: 160,
+  },
+  {
+    align: "left",
+    field: "customerSegment",
+    filterable: false,
+    headerAlign: "left",
+    headerName: "Customer Segment",
+    sortable: false,
+    width: 190,
+  },
+  {
+    align: "left",
+    field: "accountOwner",
+    filterable: false,
+    headerAlign: "left",
+    headerName: "Account Owner",
+    sortable: false,
+    width: 190,
+  },
+  {
+    align: "left",
+    field: "amount",
+    filterable: false,
+    headerAlign: "left",
+    headerName: "Revenue",
+    sortable: true,
+    type: "number",
+    valueFormatter: (value: number) => formatCurrency(value),
+    width: 150,
+  },
+  {
+    align: "left",
+    field: "status",
+    headerAlign: "left",
+    headerName: "Status",
+    sortable: true,
+    type: "singleSelect",
+    valueOptions: ["LEAD", "NEGOTIATION", "WON", "LOST"],
+    width: 145,
+  },
+  {
+    align: "right",
+    field: "date",
+    headerAlign: "right",
+    headerName: "Date",
+    sortable: true,
+    valueFormatter: (value: string) => formatDate(value),
+    width: 140,
+  },
+];
+
 const Data = () => {
   const apiRef = useGridApiRef();
   const theme = useTheme();
+  const useScrollableColumns = useMediaQuery("(max-width:1023.98px)", {
+    noSsr: true,
+  });
   const { settings } = useUserSettings();
   const compactMode = settings?.compactMode ?? false;
   const hasAppliedSavedPageSize = useRef(false);
@@ -153,6 +226,9 @@ const Data = () => {
     quickFilterValues: [],
   });
   const searchValue = String(filterModel.quickFilterValues?.[0] ?? "");
+  const revenueColumns = useScrollableColumns
+    ? scrollableRevenueColumns
+    : desktopRevenueColumns;
 
   const query = useMemo(
     () => buildRevenueQuery(paginationModel, sortModel, filterModel, settings?.defaultTimeRange),

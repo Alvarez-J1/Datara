@@ -99,6 +99,7 @@ const Header = () => {
           <Box
             component={Link}
             href="/dashboard"
+            prefetch={false}
             sx={{
               alignItems: "center",
               color: "inherit",
@@ -282,6 +283,7 @@ const Header = () => {
                   <Typography
                     component={Link}
                     href="/dashboard/profile"
+                    prefetch={false}
                     sx={{
                       color: "text.primary",
                       textDecoration: "none",
@@ -301,6 +303,7 @@ const Header = () => {
               color="primary"
               component={Link}
               href="/auth/signin"
+              prefetch={false}
               sx={{ minHeight: 40, px: { xs: 1.5, sm: 2 } }}
               variant="contained"
             >

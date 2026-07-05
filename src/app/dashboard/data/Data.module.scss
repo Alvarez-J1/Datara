@@ -4,6 +4,7 @@
   margin: 0 auto;
   max-width: 1520px;
   min-height: 100vh;
+  overflow-x: hidden;
   padding: 96px 32px 44px 104px;
   width: 100%;
 }
@@ -125,12 +126,17 @@
 }
 
 .tableScroll {
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   width: 100%;
 }
 
 .gridShell {
+  --revenue-grid-scroll-width: 1265px;
+
   height: 760px;
   min-width: 1120px;
   width: 100%;
@@ -148,6 +154,13 @@
 
 .dataPage.compact .gridShell :global(.MuiDataGrid-footerContainer) {
   min-height: 48px;
+}
+
+@media (max-width: 1023.98px) {
+  .gridShell {
+    min-width: var(--revenue-grid-scroll-width);
+    width: var(--revenue-grid-scroll-width);
+  }
 }
 
 @media (max-width: 900px) {

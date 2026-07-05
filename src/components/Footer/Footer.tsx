@@ -40,16 +40,16 @@ const Footer = () => {
       >
         <ul className={scss.footerList}>
           <li>
-            <Link  href="/dashboard">Home</Link>
+            <Link href="/dashboard" prefetch={false}>Home</Link>
           </li>
           <li>
-            <Link href="/dashboard/data">Data</Link>
+            <Link href="/dashboard/data" prefetch={false}>Data</Link>
           </li>
           <li>
-            <Link href="/dashboard/profile">Profile</Link>
+            <Link href="/dashboard/profile" prefetch={false}>Profile</Link>
           </li>
           <li>
-            <Link href="/dashboard/settings">Settings</Link>
+            <Link href="/dashboard/settings" prefetch={false}>Settings</Link>
           </li>
           <li>
             <Link

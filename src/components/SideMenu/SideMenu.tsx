@@ -113,6 +113,7 @@ export default function SideMenu() {
                   aria-current={selected ? "page" : undefined}
                   component={Link}
                   href={item.href}
+                  prefetch={false}
                   selected={selected}
                   sx={{
                     borderRadius: "8px",

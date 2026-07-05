@@ -2,7 +2,6 @@ package com.datara.revenue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.datara.revenue.dto.RevenueRecordPageResponse;
@@ -19,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
 class RevenueServiceTest {
@@ -46,12 +46,8 @@ class RevenueServiceTest {
             .build();
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        when(revenueRepository.findTableRecordsByUserId(
-            eq(userId),
-            eq("acme"),
-            eq(RevenueStatus.WON),
-            eq(startDate),
-            eq(endDate),
+        when(revenueRepository.findAll(
+            any(Specification.class),
             pageableCaptor.capture()
         )).thenReturn(new PageImpl<>(
             List.of(record),
@@ -96,18 +92,10 @@ class RevenueServiceTest {
     @Test
     void findTableRecordsDefaultsUnsafePagingAndSorting() {
         Long userId = 42L;
-        // No explicit startDate/endDate and no range -> falls back to the
-        // default range (LAST_12_MONTHS) as computed date bounds.
-        LocalDate today = LocalDate.now();
-        LocalDate expectedStart = today.minusMonths(12);
 
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        when(revenueRepository.findTableRecordsByUserId(
-            eq(userId),
-            eq(null),
-            eq(null),
-            eq(expectedStart),
-            eq(today),
+        when(revenueRepository.findAll(
+            any(Specification.class),
             pageableCaptor.capture()
         )).thenReturn(new PageImpl<>(List.of()));
 

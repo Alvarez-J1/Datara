@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,12 +80,16 @@ public class RevenueService {
             effectiveEndDate = today;
         }
 
-        Page<RevenueRecord> records = revenueRepository.findTableRecordsByUserId(
+        Specification<RevenueRecord> specification = RevenueSpecifications.tableRecords(
             userId,
             normalizedSearch,
             status,
             effectiveStartDate,
-            effectiveEndDate,
+            effectiveEndDate
+        );
+
+        Page<RevenueRecord> records = revenueRepository.findAll(
+            specification,
             PageRequest.of(safePage, safeSize, sort)
         );
 

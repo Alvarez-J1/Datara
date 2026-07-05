@@ -6,13 +6,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface RevenueRepository extends JpaRepository<RevenueRecord, Long> {
+public interface RevenueRepository
+    extends JpaRepository<RevenueRecord, Long>, JpaSpecificationExecutor<RevenueRecord> {
 
     @Query("select r from RevenueRecord r where r.user.id = :userId")
     List<RevenueRecord> findByUserId(Long userId);
@@ -233,21 +234,9 @@ public interface RevenueRepository extends JpaRepository<RevenueRecord, Long> {
         Pageable pageable
     );
 
-    @Query("""
-        select r
-        from RevenueRecord r
-        where r.user.id = :userId
-          and (:search is null or lower(r.customerName) like :search)
-          and (:status is null or r.status = :status)
-          and (:startDate is null or r.date >= :startDate)
-          and (:endDate is null or r.date <= :endDate)
-        """)
-    Page<RevenueRecord> findTableRecordsByUserId(
-        @Param("userId") Long userId,
-        @Param("search") String search,
-        @Param("status") RevenueStatus status,
-        @Param("startDate") LocalDate startDate,
-        @Param("endDate") LocalDate endDate,
-        Pageable pageable
-    );
+    // Revenue Data table filtering (search/status/date range, all optional)
+    // is built via RevenueSpecifications + findAll(Specification, Pageable)
+    // rather than a JPQL "(:param is null or ...)" query. That pattern made
+    // PostgreSQL unable to determine a bind parameter's type at prepare
+    // time - see RevenueSpecifications for the full explanation.
 }

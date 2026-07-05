@@ -70,41 +70,46 @@ const DataChart = <TType extends keyof ChartTypeRegistry>({
   type,
 }: DataChartProps<TType>) => {
   const chartRef = useRef<HTMLCanvasElement>(null);
+  const chartInstanceRef = useRef<Chart<TType> | null>(null);
+  const latestDataRef = useRef(data);
   const theme = useTheme();
   const minHeight = type === "doughnut" || type === "pie" ? 224 : 332;
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    latestDataRef.current = data;
 
-    const chartThemeOptions =
-      theme.palette.mode === "dark" ? darkOptions : lightOptions;
-    const baseThemeOptions = chartThemeOptions ?? {};
-    const themedOptions =
-      type === "doughnut" || type === "pie" || type === "polarArea"
-        ? {
-            color: baseThemeOptions.color,
-            plugins: baseThemeOptions.plugins,
-          }
-        : baseThemeOptions;
+    const chart = chartInstanceRef.current;
 
-    const chart = new Chart(chartRef.current, {
-      data,
-      options: {
-        maintainAspectRatio: false,
-        responsive: true,
-        ...mergeChartOptions<TType>(
-          (themedOptions ?? {}) as NonNullable<ChartConfiguration<TType>["options"]>,
-          (options ?? {}) as NonNullable<ChartConfiguration<TType>["options"]>
-        ),
-      },
+    if (!chart) return;
+
+    chart.data = data;
+    chart.update();
+  }, [data]);
+
+  useEffect(() => {
+    const canvas = chartRef.current;
+
+    if (!canvas) return;
+
+    destroyChart(chartInstanceRef.current);
+
+    const chart = new Chart<TType>(canvas, {
+      data: latestDataRef.current,
+      options: buildChartOptions(theme.palette.mode, type, options),
       plugins,
       type,
     });
 
+    chartInstanceRef.current = chart;
+
     return () => {
-      chart.destroy();
+      if (chartInstanceRef.current === chart) {
+        chartInstanceRef.current = null;
+      }
+
+      destroyChart(chart);
     };
-  }, [data, options, plugins, theme.palette.mode, type]);
+  }, [options, plugins, theme.palette.mode, type]);
 
   return (
     <div
@@ -117,6 +122,52 @@ const DataChart = <TType extends keyof ChartTypeRegistry>({
     >
       <canvas ref={chartRef} />
     </div>
+  );
+};
+
+const buildChartOptions = <TType extends keyof ChartTypeRegistry>(
+  themeMode: "dark" | "light",
+  type: TType,
+  options?: ChartConfiguration<TType>["options"]
+): ChartOptions<TType> => {
+  const chartThemeOptions = themeMode === "dark" ? darkOptions : lightOptions;
+  const baseThemeOptions = chartThemeOptions ?? {};
+  const themedOptions =
+    type === "doughnut" || type === "pie" || type === "polarArea"
+      ? {
+          color: baseThemeOptions.color,
+          plugins: baseThemeOptions.plugins,
+        }
+      : baseThemeOptions;
+
+  return {
+    maintainAspectRatio: false,
+    responsive: true,
+    ...mergeChartOptions<TType>(
+      (themedOptions ?? {}) as NonNullable<ChartConfiguration<TType>["options"]>,
+      (options ?? {}) as NonNullable<ChartConfiguration<TType>["options"]>
+    ),
+  };
+};
+
+const destroyChart = (chart: { destroy: () => void } | null): void => {
+  if (!chart) {
+    return;
+  }
+
+  try {
+    chart.destroy();
+  } catch (error) {
+    if (!isBenignCanvasCleanupError(error)) {
+      throw error;
+    }
+  }
+};
+
+const isBenignCanvasCleanupError = (error: unknown): boolean => {
+  return (
+    error instanceof TypeError &&
+    error.message.includes("removeChild")
   );
 };
 

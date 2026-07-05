@@ -18,9 +18,10 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import { clearDemoMode, useDemoMode } from "@/lib/demoMode";
+import { removeAuthToken, useAuthUser, useHasAuthToken } from "@/lib/api/client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signIn, signOut, useSession } from "next-auth/react";
 import * as React from "react";
 import { useContext } from "react";
 
@@ -34,14 +35,21 @@ const getPageLabel = (pathname: string | null) => {
 };
 
 const Header = () => {
-  const { data: session } = useSession();
+  const isDemoMode = useDemoMode();
+  const hasAuthToken = useHasAuthToken();
+  const authUser = useAuthUser();
   const theme = useTheme();
   const pathname = usePathname();
   const tabletCheck = useMediaQuery("(min-width:768px)");
   const colorMode = useContext(ColorModeContext);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const pageLabel = getPageLabel(pathname);
-  const isDark = theme.palette.mode === "dark";
+  const isDark = colorMode.resolvedMode === "dark";
+  const hasWorkspaceAccess = isDemoMode || hasAuthToken;
+  const displayName = (isDemoMode ? "Demo Workspace" : authUser?.name) ?? "Demo Workspace";
+  const displayEmail =
+    (isDemoMode ? "Sample business analytics" : authUser?.email) ??
+    "Sample business analytics";
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
@@ -49,6 +57,21 @@ const Header = () => {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  // A hard redirect (not router.push) so the signed-in page is fully torn
+  // down and can't be restored by the browser's Back button after logout.
+  const handleExitDemo = () => {
+    clearDemoMode();
+    removeAuthToken();
+    handleCloseUserMenu();
+    window.location.href = "/auth/signin";
+  };
+
+  const handleCredentialsLogout = () => {
+    removeAuthToken();
+    handleCloseUserMenu();
+    window.location.href = "/auth/signin";
   };
 
   return (
@@ -128,7 +151,7 @@ const Header = () => {
             </Box>
           </Box>
 
-          {session && tabletCheck && (
+          {hasWorkspaceAccess && tabletCheck && (
             <Box
               sx={{
                 borderLeft: "1px solid",
@@ -177,8 +200,13 @@ const Header = () => {
             />
             <Switch
               checked={isDark}
+              disabled={colorMode.isSavingTheme}
               onChange={colorMode.toggleColorMode}
-              slotProps={{ input: { "aria-label": "Toggle dark mode" } }}
+              slotProps={{
+                input: {
+                  "aria-label": isDark ? "Switch to light mode" : "Switch to dark mode",
+                },
+              }}
               size="small"
             />
             <DarkModeIcon
@@ -187,7 +215,7 @@ const Header = () => {
             />
           </Box>
 
-          {session ? (
+          {hasWorkspaceAccess ? (
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open profile settings">
                 <Button
@@ -204,19 +232,15 @@ const Header = () => {
                     px: { xs: 0.5, sm: 1 },
                     py: 0.45,
                   }}
-                >
-                  <Avatar
-                    alt={session.user?.name ?? "User"}
-                    src={session.user?.image ?? undefined}
-                    sx={{ height: 30, width: 30 }}
-                  />
+                  >
+                  <Avatar alt={displayName} sx={{ height: 30, width: 30 }} />
                   {tabletCheck && (
                     <Box sx={{ minWidth: 0, textAlign: "left" }}>
                       <Typography
                         noWrap
                         sx={{ fontSize: "0.78rem", fontWeight: 720, lineHeight: 1.2 }}
                       >
-                        {session.user?.name ?? "Datara user"}
+                        {displayName}
                       </Typography>
                       <Typography
                         noWrap
@@ -227,7 +251,7 @@ const Header = () => {
                           maxWidth: 190,
                         }}
                       >
-                        {session.user?.email}
+                        {displayEmail}
                       </Typography>
                     </Box>
                   )}
@@ -267,15 +291,16 @@ const Header = () => {
                     Profile
                   </Typography>
                 </MenuItem>
-                <MenuItem onClick={() => signOut()}>
-                  <Typography>Logout</Typography>
+                <MenuItem onClick={isDemoMode ? handleExitDemo : handleCredentialsLogout}>
+                  <Typography>{isDemoMode ? "Exit demo" : "Logout"}</Typography>
                 </MenuItem>
               </Menu>
             </Box>
           ) : (
             <Button
               color="primary"
-              onClick={() => signIn("google")}
+              component={Link}
+              href="/auth/signin"
               sx={{ minHeight: 40, px: { xs: 1.5, sm: 2 } }}
               variant="contained"
             >

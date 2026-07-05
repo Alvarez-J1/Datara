@@ -21,7 +21,7 @@ https://datara-dashboard.vercel.app/
 
 ## Tech Stack
 
-React • Next.js • TypeScript  • Material UI • Chart.js • Sass/SCSS • NextAuth • Git • Vercel
+React • Next.js • TypeScript  • Material UI • Chart.js • Sass/SCSS • Git • Vercel
 
 ## What I Practiced
 
@@ -85,7 +85,6 @@ Open: http://localhost:3000 in your browser.
 Datara/
 ├── src/
 │   ├── app/
-│   │   ├── api/auth/[...nextauth]/
 │   │   ├── auth/signin/
 │   │   ├── dashboard/
 │   │   │   ├── data/

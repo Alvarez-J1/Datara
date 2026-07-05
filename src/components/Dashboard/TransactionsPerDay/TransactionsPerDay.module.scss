@@ -16,6 +16,37 @@
   width: 100%;
 }
 
+.compact {
+  gap: 16px;
+  padding: clamp(14px, 2.2vw, 22px);
+}
+
+.compact .chartHeader {
+  gap: 16px;
+}
+
+.compact .title {
+  margin-top: 6px;
+}
+
+.compact .chartBody {
+  gap: 20px;
+}
+
+.compact .insightRail {
+  gap: 12px;
+  padding-left: 20px;
+}
+
+.compact .insightItem {
+  gap: 10px;
+  padding: 12px;
+}
+
+.compact .insightContext {
+  margin-top: 4px;
+}
+
 .chartHeader {
   align-items: flex-start;
   display: flex;

@@ -1,0 +1,45 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: datara-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+  sql:
+    init:
+      mode: never
+
+datara:
+  jwt:
+    secret: ${DATARA_JWT_SECRET:replace-this-with-a-strong-256-bit-secret}
+    issuer: ${DATARA_JWT_ISSUER:datara}
+    access-token-expiration-minutes: ${DATARA_JWT_ACCESS_MINUTES:15}
+    refresh-token-expiration-days: ${DATARA_JWT_REFRESH_DAYS:7}
+  cors:
+    allowed-origins:
+      - ${DATARA_CORS_ALLOWED_ORIGIN:http://localhost:3000}
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - OPTIONS
+    allowed-headers:
+      - Authorization
+      - Content-Type
+    exposed-headers:
+      - Authorization
+
+logging:
+  level:
+    org.springframework.security: INFO

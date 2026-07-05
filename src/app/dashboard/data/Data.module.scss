@@ -8,12 +8,21 @@
   width: 100%;
 }
 
+.dataPage.compact {
+  padding-bottom: 36px;
+  padding-top: 88px;
+}
+
 .pageHeader {
   align-items: end;
   display: flex;
   gap: 24px;
   justify-content: space-between;
   margin-bottom: 28px;
+}
+
+.dataPage.compact .pageHeader {
+  margin-bottom: 21px;
 }
 
 .eyebrow {
@@ -53,6 +62,11 @@
   gap: 20px;
   justify-content: space-between;
   padding: 18px;
+}
+
+.tableCard.compact .tableToolbar {
+  gap: 16px;
+  padding: 14px;
 }
 
 .tableTitle {
@@ -117,8 +131,22 @@
 
 .gridShell {
   height: 760px;
-  min-width: 900px;
+  min-width: 1120px;
   width: 100%;
+}
+
+.dataPage.compact .gridShell {
+  height: 720px;
+}
+
+.dataPage.compact .gridShell :global(.MuiDataGrid-columnHeader:not(.MuiDataGrid-columnHeaderCheckbox)),
+.dataPage.compact .gridShell :global(.MuiDataGrid-cell:not(.MuiDataGrid-cellCheckbox)) {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+.dataPage.compact .gridShell :global(.MuiDataGrid-footerContainer) {
+  min-height: 48px;
 }
 
 @media (max-width: 900px) {
@@ -150,6 +178,10 @@
 
   .gridShell {
     height: 680px;
+  }
+
+  .dataPage.compact .gridShell {
+    height: 640px;
   }
 }
 

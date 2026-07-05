@@ -4,6 +4,10 @@
   width: 100%;
 }
 
+.bottomRow.compact {
+  margin-top: 20px;
+}
+
 .analyticsCard {
   border: 1px solid;
   border-color: var(--mui-palette-divider, rgba(15, 23, 42, 0.1));
@@ -26,6 +30,24 @@
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.065);
     transform: translateY(-1px);
   }
+}
+
+.analyticsCard.compact {
+  gap: 12px;
+  min-height: 392px;
+  padding: 16px;
+}
+
+.analyticsCard.compact .cardHeader {
+  min-height: 96px;
+}
+
+.analyticsCard.compact .cardDetail {
+  margin-top: 6px;
+}
+
+.analyticsCard.compact .cardFooter {
+  padding-top: 12px;
 }
 
 .cardHeader {

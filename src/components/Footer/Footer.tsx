@@ -1,12 +1,30 @@
 "use client";
 
 import scss from "./Footer.module.scss";
-import { signIn, signOut, useSession } from "next-auth/react";
 import { Button, Paper } from "@mui/material";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { clearDemoMode, useDemoMode } from "@/lib/demoMode";
+import { removeAuthToken, useHasAuthToken } from "@/lib/api/client";
 
 const Footer = () => {
-  const { data: session } = useSession();
+  const isDemoMode = useDemoMode();
+  const hasAuthToken = useHasAuthToken();
+  const router = useRouter();
+  const hasWorkspaceAccess = isDemoMode || hasAuthToken;
+
+  const handleAuthAction = () => {
+    if (hasWorkspaceAccess) {
+      clearDemoMode();
+      removeAuthToken();
+      // Hard redirect so the signed-in page is fully torn down and the
+      // browser's Back button can't restore it after logout.
+      window.location.href = "/auth/signin";
+      return;
+    }
+
+    router.push("/auth/signin");
+  };
 
   return (
     <footer className={scss.footer}>
@@ -49,10 +67,10 @@ const Footer = () => {
           <li>
             <Button
               variant="text"
-              color={session ? "error" : "success"}
-              onClick={() => (session ? signOut() : signIn())}
+              color={hasWorkspaceAccess ? "error" : "success"}
+              onClick={handleAuthAction}
             >
-              {session ? "Sign Out" : "Sign In"}
+              {hasWorkspaceAccess ? "Sign Out" : "Sign In"}
             </Button>
           </li>
         </ul>

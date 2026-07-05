@@ -8,12 +8,21 @@
   width: 100%;
 }
 
+.settingsPage.compact {
+  padding-bottom: 36px;
+  padding-top: 88px;
+}
+
 .pageHeader {
   align-items: end;
   display: flex;
   gap: 24px;
   justify-content: space-between;
   margin-bottom: 28px;
+}
+
+.settingsPage.compact .pageHeader {
+  margin-bottom: 21px;
 }
 
 .eyebrow {
@@ -54,10 +63,36 @@
   white-space: nowrap;
 }
 
+.readOnlyNotice {
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  border-radius: 8px;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+}
+
+.saveErrorNotice {
+  background: color-mix(in srgb, #ef4444 10%, transparent);
+  border: 1px solid color-mix(in srgb, #ef4444 30%, transparent);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+}
+
 .settingsGrid {
   display: grid;
   gap: 18px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settingsPage.compact .settingsGrid {
+  gap: 14px;
 }
 
 .settingsCard {
@@ -66,6 +101,10 @@
   flex-direction: column;
   min-width: 0;
   padding: 20px;
+}
+
+.settingsPage.compact .settingsCard {
+  padding: 16px;
 }
 
 .generalCard {
@@ -78,6 +117,11 @@
   gap: 12px;
   margin-bottom: 18px;
   min-width: 0;
+}
+
+.settingsPage.compact .cardHeader {
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .cardIcon {
@@ -120,6 +164,12 @@
   padding: 16px;
 }
 
+.settingsPage.compact .profilePanel {
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 13px;
+}
+
 .profileLabel,
 .summaryLabel {
   color: color-mix(in srgb, currentColor 58%, transparent);
@@ -157,6 +207,10 @@
   padding: 14px;
 }
 
+.settingsPage.compact .summaryGrid > div {
+  padding: 12px;
+}
+
 .summaryValue {
   font-size: 1.35rem;
   font-weight: 780;
@@ -184,6 +238,12 @@
   }
 }
 
+.settingsPage.compact .settingRow {
+  gap: 12px;
+  min-height: 66px;
+  padding: 12px 0;
+}
+
 .settingCopy {
   min-width: 0;
 }
@@ -199,6 +259,26 @@
   font-size: 0.84rem;
   line-height: 1.45;
   margin-top: 5px;
+}
+
+.settingsPage.compact .settingDescription {
+  margin-top: 3px;
+}
+
+.notificationHelper {
+  color: color-mix(in srgb, currentColor 54%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 14px 0 0;
+}
+
+.settingsPage.compact .notificationHelper {
+  margin-top: 10px;
+}
+
+.settingSelect {
+  flex: 0 0 auto;
+  min-width: 190px;
 }
 
 .settingRow :global(.MuiSwitch-root) {
@@ -268,6 +348,11 @@
 
   .settingRow {
     gap: 12px;
+  }
+
+  .settingSelect {
+    min-width: 0;
+    width: 100%;
   }
 }
 

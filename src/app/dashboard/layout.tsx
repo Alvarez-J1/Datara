@@ -1,14 +1,16 @@
 "use client";
 
 import SideMenu from "@/components/SideMenu/SideMenu";
-import { useSession } from "next-auth/react";
+import { useHasAuthToken } from "@/lib/api/client";
+import { useDemoMode } from "@/lib/demoMode";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session } = useSession();
+  const isDemoMode = useDemoMode();
+  const hasAuthToken = useHasAuthToken();
 
   return (
     <>
@@ -33,7 +35,7 @@ export default function DashboardLayout({
         </div>
       </main>
       {/* Permanent drawer is position:fixed; keeping it out of main avoids flex sizing quirks. */}
-      {session && <SideMenu />}
+      {(isDemoMode || hasAuthToken) && <SideMenu />}
     </>
   );
 }

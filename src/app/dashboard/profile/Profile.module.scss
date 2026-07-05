@@ -153,6 +153,41 @@
   max-width: 640px;
 }
 
+.readOnlyNotice {
+  align-items: flex-start;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  border-radius: 8px;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  display: flex;
+  font-size: 0.86rem;
+  gap: 10px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+
+  svg {
+    color: #14b8a6;
+    flex: 0 0 auto;
+    margin-top: 2px;
+  }
+
+  span {
+    display: block;
+  }
+}
+
+.saveErrorNotice {
+  background: color-mix(in srgb, #ef4444 10%, transparent);
+  border: 1px solid color-mix(in srgb, #ef4444 30%, transparent);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+}
+
 .profileForm {
   display: flex;
   flex-direction: column;

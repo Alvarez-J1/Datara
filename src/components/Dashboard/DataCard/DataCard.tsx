@@ -8,6 +8,7 @@ import scss from "./DataCard.module.scss";
 
 export type DataCardProps = {
   accent: string;
+  compact?: boolean;
   context: string;
   description: string;
   title: string;
@@ -19,6 +20,7 @@ export type DataCardProps = {
 
 const DataCard = ({
   accent,
+  compact = false,
   context,
   description,
   title,
@@ -43,7 +45,7 @@ const DataCard = ({
 
   return (
     <Paper
-      className={scss.dataCard}
+      className={`${scss.dataCard} ${compact ? scss.compact : ""}`}
       component="article"
       sx={{
         backgroundColor: "background.paper",

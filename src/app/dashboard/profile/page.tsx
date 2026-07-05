@@ -2,6 +2,7 @@
 
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import {
@@ -15,16 +16,16 @@ import {
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import Footer from "@/components/Footer/Footer";
-import { useSession } from "next-auth/react";
+import { updateProfile } from "@/lib/api/auth";
+import { ApiError, useAuthUser } from "@/lib/api/client";
+import { useDemoMode } from "@/lib/demoMode";
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import scss from "./Profile.module.scss";
 
 type ProfileFormData = {
-  confirmPassword: string;
   email: string;
   firstName: string;
   lastName: string;
-  password: string;
   receiveEmails: boolean;
 };
 
@@ -35,50 +36,72 @@ const getProfileDefaults = (
   const names = name ? name.split(" ") : [];
 
   return {
-    confirmPassword: "",
     email: email || "",
     firstName: names[0] || "",
     lastName: names.length > 1 ? names[names.length - 1] : "",
-    password: "",
     receiveEmails: false,
   };
 };
 
 export default function Profile() {
-  const { data: session } = useSession();
+  const authUser = useAuthUser();
+  const isDemoMode = useDemoMode();
   const theme = useTheme();
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [formData, setFormData] = useState<Partial<ProfileFormData>>({
-    confirmPassword: "",
-    password: "",
     receiveEmails: false,
   });
-  const sessionDefaults = getProfileDefaults(
-    session?.user?.name,
-    session?.user?.email
-  );
+  const displayName = authUser?.name;
+  const displayEmail = authUser?.email;
+  const sessionDefaults = getProfileDefaults(displayName, displayEmail);
   const visibleFormData: ProfileFormData = {
     ...sessionDefaults,
     ...formData,
-    confirmPassword: formData.confirmPassword ?? "",
-    password: formData.password ?? "",
     receiveEmails: formData.receiveEmails ?? false,
   };
+
+  // The shared demo/admin account is intentionally locked server-side, so it
+  // gets a read-only view instead of a save action that would just fail.
+  const isEditable = !isDemoMode;
 
   const handleFormChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = event.target;
 
     setSaved(false);
+    setSaveError("");
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSaved(true);
-    console.log("Profile saved:", visibleFormData);
+
+    if (!isEditable) {
+      return;
+    }
+
+    setSaved(false);
+    setSaveError("");
+    setIsSaving(true);
+
+    const name = `${visibleFormData.firstName} ${visibleFormData.lastName}`.trim();
+
+    try {
+      await updateProfile({ email: visibleFormData.email, name });
+      setSaved(true);
+    } catch (error) {
+      setSaveError(
+        error instanceof ApiError
+          ? error.message
+          : "Unable to save your profile. Please try again."
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const fieldStyles = {
@@ -138,9 +161,8 @@ export default function Profile() {
         <aside className={scss.profileSummary}>
           <div className={scss.avatarWrap}>
             <Avatar
-              alt={session?.user?.name || "User"}
+              alt={displayName || "User"}
               className={scss.avatar}
-              src={session?.user?.image || ""}
               sx={{
                 height: 96,
                 width: 96,
@@ -151,7 +173,7 @@ export default function Profile() {
 
           <div>
             <Typography className={scss.profileName}>
-              {session?.user?.name || "Datara user"}
+              {displayName || "Datara user"}
             </Typography>
             <Typography className={scss.profileRole}>
             Revenue analytics dashboard
@@ -161,11 +183,13 @@ export default function Profile() {
           <div className={scss.metaList}>
             <div className={scss.metaItem}>
               <EmailOutlinedIcon fontSize="small" />
-              <span>{session?.user?.email || "No email available"}</span>
+              <span>{displayEmail || "No email available"}</span>
             </div>
             <div className={scss.metaItem}>
               <ShieldOutlinedIcon fontSize="small" />
-              <span>Google OAuth protected</span>
+              <span>
+                {isDemoMode ? "Shared demo account (read-only)" : "Password protected"}
+              </span>
             </div>
             <div className={scss.metaItem}>
               <BadgeOutlinedIcon fontSize="small" />
@@ -187,9 +211,26 @@ export default function Profile() {
             </div>
           </div>
 
+          {!isEditable && (
+            <div className={scss.readOnlyNotice}>
+              <InfoOutlinedIcon fontSize="small" />
+              <Typography component="span">
+                This is the shared demo account, so editing is disabled here.
+                Sign up for a real account to update your name and email.
+              </Typography>
+            </div>
+          )}
+
+          {saveError && (
+            <Typography className={scss.saveErrorNotice} role="alert">
+              {saveError}
+            </Typography>
+          )}
+
           <form className={scss.profileForm} onSubmit={handleSubmit}>
             <div className={scss.formGrid}>
               <TextField
+                disabled={!isEditable || isSaving}
                 fullWidth
                 label="First name"
                 name="firstName"
@@ -201,6 +242,7 @@ export default function Profile() {
               />
 
               <TextField
+                disabled={!isEditable || isSaving}
                 fullWidth
                 label="Last name"
                 name="lastName"
@@ -213,6 +255,7 @@ export default function Profile() {
 
               <TextField
                 className={scss.fullWidthField}
+                disabled={!isEditable || isSaving}
                 fullWidth
                 label="Email"
                 name="email"
@@ -222,30 +265,6 @@ export default function Profile() {
                 sx={fieldStyles}
                 type="email"
                 value={visibleFormData.email}
-              />
-
-              <TextField
-                fullWidth
-                label="Password"
-                name="password"
-                onChange={handleFormChange}
-                required
-                size="small"
-                sx={fieldStyles}
-                type="password"
-                value={visibleFormData.password}
-              />
-
-              <TextField
-                fullWidth
-                label="Confirm password"
-                name="confirmPassword"
-                onChange={handleFormChange}
-                required
-                size="small"
-                sx={fieldStyles}
-                type="password"
-                value={visibleFormData.confirmPassword}
               />
             </div>
 
@@ -261,6 +280,7 @@ export default function Profile() {
               </div>
               <Checkbox
                 checked={visibleFormData.receiveEmails}
+                disabled={!isEditable}
                 name="receiveEmails"
                 onChange={handleFormChange}
                 slotProps={{
@@ -282,11 +302,12 @@ export default function Profile() {
             <div className={scss.formActions}>
               <Button
                 className={scss.saveButton}
+                disabled={!isEditable || isSaving}
                 startIcon={<SaveOutlinedIcon />}
                 type="submit"
                 variant="contained"
               >
-                Save changes
+                {isSaving ? "Saving..." : "Save changes"}
               </Button>
             </div>
           </form>

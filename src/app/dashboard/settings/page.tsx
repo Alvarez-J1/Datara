@@ -8,157 +8,284 @@ import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import {
   Button,
   Chip,
+  MenuItem,
   Paper,
   Switch,
+  TextField,
   Typography,
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import Footer from "@/components/Footer/Footer";
-import { useSession } from "next-auth/react";
-import { type ChangeEvent, useState } from "react";
+import { ApiError, useAuthUser } from "@/lib/api/client";
+import {
+  useSettingsActions,
+  useUserSettings,
+  type UserSettings,
+} from "@/lib/api/settings";
+import {
+  type ChangeEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import scss from "./Settings.module.scss";
 
-type SettingsState = {
+type SettingsFormState = {
   anomalyAlerts: boolean;
-  autoTheme: boolean;
   compactMode: boolean;
-  customers: boolean;
+  defaultTimeRange: UserSettings["defaultTimeRange"];
   emailDigest: boolean;
-  orders: boolean;
-  profit: boolean;
-  reducedMotion: boolean;
-  revenue: boolean;
+  tablePageSize: string;
+  theme: UserSettings["theme"];
   weeklyReport: boolean;
 };
 
-type SettingItem = {
+const DEFAULT_FORM_STATE: SettingsFormState = {
+  anomalyAlerts: true,
+  compactMode: false,
+  defaultTimeRange: "LAST_12_MONTHS",
+  emailDigest: false,
+  tablePageSize: "25",
+  theme: "SYSTEM",
+  weeklyReport: true,
+};
+
+const toFormState = (settings: UserSettings): SettingsFormState => ({
+  anomalyAlerts: settings.anomalyAlerts,
+  compactMode: settings.compactMode,
+  defaultTimeRange: settings.defaultTimeRange,
+  emailDigest: settings.emailDigest,
+  tablePageSize: String(settings.tablePageSize),
+  theme: settings.theme,
+  weeklyReport: settings.weeklyReport,
+});
+
+const toApiPayload = (formState: SettingsFormState): UserSettings => ({
+  anomalyAlerts: formState.anomalyAlerts,
+  compactMode: formState.compactMode,
+  defaultTimeRange: formState.defaultTimeRange,
+  emailDigest: formState.emailDigest,
+  tablePageSize: Number(formState.tablePageSize) as UserSettings["tablePageSize"],
+  theme: formState.theme,
+  weeklyReport: formState.weeklyReport,
+});
+
+const themeLabels: Record<UserSettings["theme"], string> = {
+  DARK: "Dark",
+  LIGHT: "Light",
+  SYSTEM: "System",
+};
+
+type ToggleKey = "anomalyAlerts" | "compactMode" | "emailDigest" | "weeklyReport";
+
+type ToggleItem = {
   description: string;
-  key: keyof SettingsState;
+  key: ToggleKey;
   label: string;
 };
 
-const dashboardPreferences: SettingItem[] = [
+const notifications: ToggleItem[] = [
   {
-    description: "Show revenue and forecast progress on overview cards.",
-    key: "revenue",
-    label: "Revenue metrics",
-  },
-  {
-    description: "Show profit and margin metrics in dashboard summaries.",
-    key: "profit",
-    label: "Profit insights",
-  },
-  {
-    description: "Include order volume, average order value, and conversion details.",
-    key: "orders",
-    label: "Order analytics",
-  },
-  {
-    description: "Show customer retention and account health metrics.",
-    key: "customers",
-    label: "Customer metrics",
-  },
-];
-
-const notifications: SettingItem[] = [
-  {
-    description: "Receive a concise revenue summary at the start of each week.",
+    description: "Save your preference for weekly performance report emails.",
     key: "weeklyReport",
     label: "Weekly performance report",
   },
   {
-    description: "Get alerts when revenue or conversion trends change sharply.",
-    key: "anomalyAlerts",
-    label: "Anomaly alerts",
-  },
-  {
-    description: "Receive a weekly summary of account and pipeline activity.",
+    description: "Save your preference for periodic email summaries.",
     key: "emailDigest",
     label: "Email digest",
   },
-];
-
-const appearance: SettingItem[] = [
   {
-    description: "Reduce spacing in tables and cards for denser layouts.",
-    key: "compactMode",
-    label: "Compact dashboard density",
-  },
-  {
-    description: "Match the dashboard theme to your system preference when available.",
-    key: "autoTheme",
-    label: "Use system theme",
-  },
-  {
-    description: "Reduce interface animations and transitions.",
-    key: "reducedMotion",
-    label: "Reduce motion",
+    description: "Save your preference for anomaly notifications.",
+    key: "anomalyAlerts",
+    label: "Anomaly alerts",
   },
 ];
 
-const SettingRow = ({
-  checked,
+const FieldRow = ({
+  children,
   description,
   label,
-  name,
-  onChange,
-}: Omit<SettingItem, "key"> & {
-  checked: boolean;
-  name: keyof SettingsState;
-  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}: {
+  children: ReactNode;
+  description: string;
+  label: string;
 }) => (
   <div className={scss.settingRow}>
     <div className={scss.settingCopy}>
       <Typography className={scss.settingLabel}>{label}</Typography>
       <Typography className={scss.settingDescription}>{description}</Typography>
     </div>
+    {children}
+  </div>
+);
+
+const ToggleRow = ({
+  checked,
+  description,
+  disabled,
+  label,
+  name,
+  onChange,
+}: Omit<ToggleItem, "key"> & {
+  checked: boolean;
+  disabled?: boolean;
+  name: ToggleKey;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}) => (
+  <FieldRow description={description} label={label}>
     <Switch
       checked={checked}
+      disabled={disabled}
       name={name}
       onChange={onChange}
       slotProps={{ input: { "aria-label": label } }}
     />
-  </div>
+  </FieldRow>
 );
 
 export default function Settings() {
-  const { data: session } = useSession();
+  const authUser = useAuthUser();
   const theme = useTheme();
-  const [saved, setSaved] = useState(false);
-  const [settings, setSettings] = useState<SettingsState>({
-    anomalyAlerts: true,
-    autoTheme: false,
-    compactMode: false,
-    customers: true,
-    emailDigest: false,
-    orders: true,
-    profit: true,
-    reducedMotion: false,
-    revenue: true,
-    weeklyReport: true,
-  });
+  const {
+    error: settingsLoadError,
+    isLoading: isSettingsLoading,
+    settings,
+  } = useUserSettings();
+  const { setThemePreference, updateSettings } = useSettingsActions();
+  const hasHydratedForm = useRef(false);
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const [formState, setFormState] = useState<SettingsFormState>(DEFAULT_FORM_STATE);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!settings) {
+      return;
+    }
+
+    if (!hasHydratedForm.current) {
+      hasHydratedForm.current = true;
+      setFormState(toFormState(settings));
+      return;
+    }
+
+    setFormState((current) => ({
+      ...current,
+      theme: settings.theme,
+    }));
+  }, [settings]);
+
+  const isLoading = isSettingsLoading;
+  const isEditable = !isLoading;
+  const controlsDisabled = !isEditable || isSaving;
+
+  const handleToggleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = event.target;
 
     setSaved(false);
-    setSettings((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
+    setFormState((prev) => ({ ...prev, [name]: checked }));
   };
 
-  const handleSubmit = () => {
-    setSaved(true);
-    console.log("Settings saved:", settings);
+  const handleFieldChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = event.target;
+
+    setSaved(false);
+
+    if (name === "theme") {
+      const nextTheme = value as UserSettings["theme"];
+
+      setSaveError("");
+      setFormState((prev) => ({ ...prev, theme: nextTheme }));
+      setIsSaving(true);
+
+      setThemePreference(nextTheme)
+        .then((updated) => {
+          setFormState((prev) => ({
+            ...prev,
+            theme: updated.theme,
+          }));
+          setSaved(true);
+        })
+        .catch((error) => {
+          setSaveError(
+            error instanceof ApiError
+              ? error.message
+              : "Unable to save your theme preference. Please try again."
+          );
+          setFormState((prev) => ({
+            ...prev,
+            theme: settings?.theme ?? DEFAULT_FORM_STATE.theme,
+          }));
+        })
+        .finally(() => {
+          setIsSaving(false);
+        });
+
+      return;
+    }
+
+    setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const activeDashboardSignals = dashboardPreferences.filter(
-    (item) => settings[item.key]
-  ).length;
+  const handleSubmit = async () => {
+    if (!isEditable) {
+      return;
+    }
+
+    setSaved(false);
+    setSaveError("");
+    setIsSaving(true);
+
+    try {
+      const updated = await updateSettings(toApiPayload(formState));
+      setFormState(toFormState(updated));
+      setSaved(true);
+    } catch (error) {
+      setSaveError(
+        error instanceof ApiError
+          ? error.message
+          : "Unable to save your settings. Please try again."
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const fieldStyles = {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "8px",
+      transition: "box-shadow 160ms ease, border-color 160ms ease",
+      "&:hover .MuiOutlinedInput-notchedOutline": {
+        borderColor: alpha(theme.palette.secondary.main, 0.55),
+      },
+      "&.Mui-focused": {
+        boxShadow: `0 0 0 3px ${alpha(theme.palette.secondary.main, 0.1)}`,
+      },
+      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+        borderColor: theme.palette.secondary.main,
+      },
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: theme.palette.secondary.main,
+    },
+  };
+
+  const enabledNotificationCount = [
+    formState.weeklyReport,
+    formState.emailDigest,
+    formState.anomalyAlerts,
+  ].filter(Boolean).length;
 
   return (
-    <main className={scss.settingsPage}>
+    <main
+      className={`${scss.settingsPage} ${formState.compactMode ? scss.compact : ""}`}
+      data-compact-mode={formState.compactMode}
+    >
       <section className={scss.pageHeader}>
         <div>
           <Typography className={scss.eyebrow}>Workspace controls</Typography>
@@ -181,14 +308,27 @@ export default function Settings() {
           )}
           <Button
             className={scss.saveButton}
+            disabled={controlsDisabled}
             onClick={handleSubmit}
             startIcon={<SaveOutlinedIcon />}
             variant="contained"
           >
-            Save changes
+            {isSaving ? "Saving..." : "Save changes"}
           </Button>
         </div>
       </section>
+
+      {settingsLoadError && (
+        <Typography className={scss.saveErrorNotice} role="alert">
+          {settingsLoadError}
+        </Typography>
+      )}
+
+      {saveError && (
+        <Typography className={scss.saveErrorNotice} role="alert">
+          {saveError}
+        </Typography>
+      )}
 
       <section className={scss.settingsGrid} aria-label="Datara settings">
         <Paper
@@ -226,25 +366,28 @@ export default function Settings() {
             <div>
               <Typography className={scss.profileLabel}>Signed in as</Typography>
               <Typography className={scss.profileName}>
-                {session?.user?.name ?? "Datara user"}
+                {authUser?.name ?? "Datara user"}
               </Typography>
               <Typography className={scss.profileEmail}>
-                {session?.user?.email ?? "No email available"}
+                {authUser?.email ?? "No email available"}
               </Typography>
             </div>
-    
           </div>
 
           <div className={scss.summaryGrid}>
             <div>
               <Typography className={scss.summaryValue}>
-                {activeDashboardSignals}/4
+                {enabledNotificationCount}/3
               </Typography>
-              <Typography className={scss.summaryLabel}>Signals enabled</Typography>
+              <Typography className={scss.summaryLabel}>
+                Notifications enabled
+              </Typography>
             </div>
             <div>
-              <Typography className={scss.summaryValue}>Weekly</Typography>
-              <Typography className={scss.summaryLabel}>Reporting cadence</Typography>
+              <Typography className={scss.summaryValue}>
+                {themeLabels[formState.theme]}
+              </Typography>
+              <Typography className={scss.summaryLabel}>Active theme</Typography>
             </div>
           </div>
         </Paper>
@@ -262,21 +405,60 @@ export default function Settings() {
                 Dashboard Preferences
               </Typography>
               <Typography className={scss.cardDescription}>
-              Choose which metrics appear across the dashboard.
+              Defaults applied across dashboard views and tables.
               </Typography>
             </div>
           </div>
 
           <div className={scss.settingList}>
-            {dashboardPreferences.map((item) => (
-              <SettingRow
-                {...item}
-                checked={settings[item.key]}
-                name={item.key}
-                onChange={handleChange}
-                key={item.key}
-              />
-            ))}
+            <FieldRow
+              description="Default lookback window for dashboard charts and KPI comparisons."
+              label="Default time range"
+            >
+              <TextField
+                className={scss.settingSelect}
+                disabled={controlsDisabled}
+                name="defaultTimeRange"
+                onChange={handleFieldChange}
+                select
+                size="small"
+                sx={fieldStyles}
+                value={formState.defaultTimeRange}
+              >
+                <MenuItem value="LAST_30_DAYS">Last 30 days</MenuItem>
+                <MenuItem value="LAST_90_DAYS">Last 90 days</MenuItem>
+                <MenuItem value="LAST_12_MONTHS">Last 12 months</MenuItem>
+              </TextField>
+            </FieldRow>
+
+            <FieldRow
+              description="Number of rows shown per page in the Revenue Data table."
+              label="Table page size"
+            >
+              <TextField
+                className={scss.settingSelect}
+                disabled={controlsDisabled}
+                name="tablePageSize"
+                onChange={handleFieldChange}
+                select
+                size="small"
+                sx={fieldStyles}
+                value={formState.tablePageSize}
+              >
+                <MenuItem value="25">25 rows</MenuItem>
+                <MenuItem value="50">50 rows</MenuItem>
+                <MenuItem value="100">100 rows</MenuItem>
+              </TextField>
+            </FieldRow>
+
+            <ToggleRow
+              checked={formState.compactMode}
+              description="Reduce spacing in tables and cards for denser layouts."
+              disabled={controlsDisabled}
+              label="Compact mode"
+              name="compactMode"
+              onChange={handleToggleChange}
+            />
           </div>
         </Paper>
 
@@ -293,22 +475,29 @@ export default function Settings() {
                 Notifications
               </Typography>
               <Typography className={scss.cardDescription}>
-              Manage alerts and update notifications.
+                Manage saved notification preferences.
               </Typography>
             </div>
           </div>
 
           <div className={scss.settingList}>
             {notifications.map((item) => (
-              <SettingRow
+              <ToggleRow
                 {...item}
-                checked={settings[item.key]}
+                checked={formState[item.key]}
+                disabled={controlsDisabled}
                 name={item.key}
-                onChange={handleChange}
+                onChange={handleToggleChange}
                 key={item.key}
               />
             ))}
           </div>
+
+          <Typography className={scss.notificationHelper}>
+            Notification delivery is not enabled in this demo. These preferences
+            are saved to your account and would control email notifications in a
+            production deployment.
+          </Typography>
         </Paper>
 
         <Paper
@@ -324,21 +513,28 @@ export default function Settings() {
                 Appearance & Theming
               </Typography>
               <Typography className={scss.cardDescription}>
-              Customize dashboard appearance and motion preferences.
+              Customize how the Datara workspace looks.
               </Typography>
             </div>
           </div>
 
           <div className={scss.settingList}>
-            {appearance.map((item) => (
-              <SettingRow
-                {...item}
-                checked={settings[item.key]}
-                name={item.key}
-                onChange={handleChange}
-                key={item.key}
-              />
-            ))}
+            <FieldRow description="Choose how Datara looks on this device." label="Theme">
+              <TextField
+                className={scss.settingSelect}
+                disabled={controlsDisabled}
+                name="theme"
+                onChange={handleFieldChange}
+                select
+                size="small"
+                sx={fieldStyles}
+                value={formState.theme}
+              >
+                <MenuItem value="LIGHT">Light</MenuItem>
+                <MenuItem value="DARK">Dark</MenuItem>
+                <MenuItem value="SYSTEM">System</MenuItem>
+              </TextField>
+            </FieldRow>
           </div>
         </Paper>
       </section>

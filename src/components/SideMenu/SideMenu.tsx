@@ -20,7 +20,8 @@ import ListItemText from "@mui/material/ListItemText";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { alpha, useTheme } from "@mui/material/styles";
-import { signOut } from "next-auth/react";
+import { removeAuthToken } from "@/lib/api/client";
+import { clearDemoMode } from "@/lib/demoMode";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import scss from "./SideMenu.module.scss";
@@ -49,6 +50,14 @@ export default function SideMenu() {
 
   const handleDrawerToggle = () => {
     setOpen((current) => !current);
+  };
+
+  // Hard redirect so the signed-in page is fully torn down and the browser's
+  // Back button can't restore it after logout.
+  const handleSignOut = () => {
+    clearDemoMode();
+    removeAuthToken();
+    window.location.href = "/auth/signin";
   };
 
   return (
@@ -170,7 +179,7 @@ export default function SideMenu() {
         <Tooltip title={open ? "" : "Sign out"} placement="right">
           <ListItemButton
             aria-label="Sign out"
-            onClick={() => signOut()}
+            onClick={handleSignOut}
             sx={{
               borderRadius: "8px",
               color: "text.secondary",

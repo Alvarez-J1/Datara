@@ -17,6 +17,21 @@
   }
 }
 
+.compact {
+  gap: 12px;
+  min-height: 156px;
+  padding: 16px;
+}
+
+.compact .contextRow {
+  gap: 4px;
+  padding-top: 10px;
+}
+
+.compact .trendPill {
+  padding: 6px 7px;
+}
+
 .cardHeader {
   align-items: center;
   display: flex;

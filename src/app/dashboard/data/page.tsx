@@ -6,7 +6,6 @@ import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {
   Box,
   Button,
-  Chip,
   InputAdornment,
   Paper,
   TextField,
@@ -15,516 +14,140 @@ import {
 import { alpha, useTheme } from "@mui/material/styles";
 import {
   DataGrid,
+  GRID_CHECKBOX_SELECTION_COL_DEF,
   GridColDef,
   GridFilterModel,
   GridLogicOperator,
+  GridPaginationModel,
+  GridSortModel,
   useGridApiRef,
 } from "@mui/x-data-grid";
 import Footer from "@/components/Footer/Footer";
-import { type ChangeEvent, useState } from "react";
+import {
+  revenueRecords,
+  type RevenueRecordQuery,
+  type RevenueRecordRow,
+  type RevenueStatus,
+} from "@/lib/api/analytics";
+import { reportApiError } from "@/lib/api/client";
+import { useUserSettings, type DefaultTimeRange } from "@/lib/api/settings";
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import scss from "./Data.module.scss";
 
-type RevenueRecord = {
-  active: string;
-  completion: string;
-  currency: string;
-  customerEmail: string;
+type RevenueGridRow = {
+  accountOwner: string;
+  amount: number;
+  customerSegment: string;
   customerName: string;
-  discountAmount: string;
-  discountRate: string;
+  date: string;
   id: number;
-  planPrice: string;
-  planTier: string;
-  product: string;
   region: string;
-  revenue: string;
-  seats: number;
-  segment: string;
-  status: "Active" | "At Risk" | "Cancelled" | "Completed" | "Open";
-  workspaceId: string;
+  status: RevenueStatus;
 };
 
-const revenueRows: RevenueRecord[] = [
+// Region, Status, Revenue, and Date are fixed-width (their content has a
+// predictable max length, so a fixed pixel width is the correct choice).
+// Customer Name, Customer Segment, and Account Owner instead use `flex` with
+// a floor `minWidth`, so any leftover container width is distributed
+// proportionally across those three instead of leaving a blank gap after the
+// last column or over-stretching a single column.
+const revenueColumns: GridColDef<RevenueGridRow>[] = [
   {
-    active: "Yes",
-    completion: "96%",
-    currency: "USD",
-    customerEmail: "finance@auroralabs.io",
-    customerName: "Aurora Labs",
-    discountAmount: "$53,426",
-    discountRate: "8%",
-    id: 1001,
-    planPrice: "$4,800",
-    planTier: "Enterprise",
-    product: "Enterprise Plan",
-    region: "North America",
-    revenue: "$614,400",
-    seats: 128,
-    segment: "Strategic",
-    status: "Active",
-    workspaceId: "WS-1042",
+    align: "left",
+    field: "customerName",
+    filterable: false,
+    flex: 1.6,
+    headerAlign: "left",
+    headerName: "Customer Name",
+    minWidth: 220,
+    sortable: false,
   },
   {
-    active: "Yes",
-    completion: "88%",
-    currency: "USD",
-    customerEmail: "ops@northstarhealth.com",
-    customerName: "Northstar Health",
-    discountAmount: "$18,240",
-    discountRate: "5%",
-    id: 1002,
-    planPrice: "$3,200",
-    planTier: "Business",
-    product: "Business Plan",
-    region: "North America",
-    revenue: "$364,800",
-    seats: 114,
-    segment: "Mid-Market",
-    status: "Active",
-    workspaceId: "WS-1187",
+    align: "left",
+    field: "region",
+    filterable: false,
+    headerAlign: "left",
+    headerName: "Region",
+    sortable: false,
+    width: 160,
   },
   {
-    active: "Yes",
-    completion: "72%",
-    currency: "USD",
-    customerEmail: "admin@lumaretail.co",
-    customerName: "Luma Retail",
-    discountAmount: "$6,720",
-    discountRate: "7%",
-    id: 1003,
-    planPrice: "$1,600",
-    planTier: "Pro",
-    product: "Pro Plan",
-    region: "North America",
-    revenue: "$96,000",
-    seats: 60,
-    segment: "SMB",
-    status: "Open",
-    workspaceId: "WS-1220",
+    align: "left",
+    field: "customerSegment",
+    filterable: false,
+    flex: 1,
+    headerAlign: "left",
+    headerName: "Customer Segment",
+    minWidth: 160,
+    sortable: false,
   },
   {
-    active: "Yes",
-    completion: "100%",
-    currency: "USD",
-    customerEmail: "revops@heliosystems.ai",
-    customerName: "Helio Systems",
-    discountAmount: "$22,560",
-    discountRate: "6%",
-    id: 1004,
-    planPrice: "$4,700",
-    planTier: "Enterprise",
-    product: "Forecasting Add-on",
-    region: "Europe",
-    revenue: "$376,000",
-    seats: 80,
-    segment: "Enterprise",
-    status: "Completed",
-    workspaceId: "WS-1265",
+    align: "left",
+    field: "accountOwner",
+    filterable: false,
+    flex: 1,
+    headerAlign: "left",
+    headerName: "Account Owner",
+    minWidth: 160,
+    sortable: false,
   },
   {
-    active: "Yes",
-    completion: "67%",
-    currency: "USD",
-    customerEmail: "billing@brightpath.io",
-    customerName: "BrightPath",
-    discountAmount: "$3,360",
-    discountRate: "4%",
-    id: 1005,
-    planPrice: "$1,400",
-    planTier: "Pro",
-    product: "Analytics Add-on",
-    region: "North America",
-    revenue: "$84,000",
-    seats: 60,
-    segment: "SMB",
-    status: "At Risk",
-    workspaceId: "WS-1311",
+    align: "left",
+    field: "amount",
+    filterable: false,
+    headerAlign: "left",
+    headerName: "Revenue",
+    sortable: true,
+    type: "number",
+    valueFormatter: (value: number) => formatCurrency(value),
+    width: 140,
   },
   {
-    active: "No",
-    completion: "18%",
-    currency: "USD",
-    customerEmail: "accounts@evergreenlegal.com",
-    customerName: "Evergreen Legal",
-    discountAmount: "$1,440",
-    discountRate: "3%",
-    id: 1006,
-    planPrice: "$1,200",
-    planTier: "Starter",
-    product: "Starter Plan",
-    region: "North America",
-    revenue: "$48,000",
-    seats: 40,
-    segment: "SMB",
-    status: "Cancelled",
-    workspaceId: "WS-1368",
+    align: "left",
+    field: "status",
+    headerAlign: "left",
+    headerName: "Status",
+    sortable: true,
+    type: "singleSelect",
+    valueOptions: ["LEAD", "NEGOTIATION", "WON", "LOST"],
+    width: 120,
   },
   {
-    active: "Yes",
-    completion: "91%",
-    currency: "EUR",
-    customerEmail: "data@novafinance.eu",
-    customerName: "Nova Finance",
-    discountAmount: "€14,400",
-    discountRate: "5%",
-    id: 1007,
-    planPrice: "€3,600",
-    planTier: "Business",
-    product: "Reporting Suite",
-    region: "Europe",
-    revenue: "€288,000",
-    seats: 80,
-    segment: "Mid-Market",
-    status: "Active",
-    workspaceId: "WS-1404",
-  },
-  {
-    active: "Yes",
-    completion: "82%",
-    currency: "USD",
-    customerEmail: "platform@cartwheel.app",
-    customerName: "Cartwheel",
-    discountAmount: "$9,600",
-    discountRate: "4%",
-    id: 1008,
-    planPrice: "$2,000",
-    planTier: "Business",
-    product: "API Access",
-    region: "North America",
-    revenue: "$240,000",
-    seats: 120,
-    segment: "Mid-Market",
-    status: "Active",
-    workspaceId: "WS-1459",
-  },
-  {
-    active: "Yes",
-    completion: "54%",
-    currency: "USD",
-    customerEmail: "hello@grainline.studio",
-    customerName: "Grainline Studio",
-    discountAmount: "$960",
-    discountRate: "2%",
-    id: 1009,
-    planPrice: "$800",
-    planTier: "Starter",
-    product: "Team Seats",
-    region: "North America",
-    revenue: "$48,000",
-    seats: 60,
-    segment: "SMB",
-    status: "Open",
-    workspaceId: "WS-1502",
-  },
-  {
-    active: "Yes",
-    completion: "94%",
-    currency: "USD",
-    customerEmail: "ops@meridiancloud.com",
-    customerName: "Meridian Cloud",
-    discountAmount: "$39,936",
-    discountRate: "8%",
-    id: 1010,
-    planPrice: "$5,200",
-    planTier: "Enterprise",
-    product: "Enterprise Plan",
-    region: "APAC",
-    revenue: "$499,200",
-    seats: 96,
-    segment: "Enterprise",
-    status: "Active",
-    workspaceId: "WS-1540",
-  },
-  {
-    active: "Yes",
-    completion: "76%",
-    currency: "USD",
-    customerEmail: "admin@clearwatercrm.com",
-    customerName: "Clearwater CRM",
-    discountAmount: "$7,680",
-    discountRate: "5%",
-    id: 1011,
-    planPrice: "$2,400",
-    planTier: "Business",
-    product: "Business Plan",
-    region: "North America",
-    revenue: "$153,600",
-    seats: 64,
-    segment: "Mid-Market",
-    status: "Active",
-    workspaceId: "WS-1596",
-  },
-  {
-    active: "Yes",
-    completion: "63%",
-    currency: "GBP",
-    customerEmail: "revops@atlaslabs.uk",
-    customerName: "Atlas Labs",
-    discountAmount: "£4,224",
-    discountRate: "4%",
-    id: 1012,
-    planPrice: "£1,760",
-    planTier: "Pro",
-    product: "Pro Plan",
-    region: "Europe",
-    revenue: "£105,600",
-    seats: 60,
-    segment: "SMB",
-    status: "At Risk",
-    workspaceId: "WS-1633",
-  },
-  {
-    active: "Yes",
-    completion: "99%",
-    currency: "USD",
-    customerEmail: "team@orbitanalytics.com",
-    customerName: "Orbit Analytics",
-    discountAmount: "$16,128",
-    discountRate: "6%",
-    id: 1013,
-    planPrice: "$4,200",
-    planTier: "Enterprise",
-    product: "Forecasting Add-on",
-    region: "North America",
-    revenue: "$268,800",
-    seats: 64,
-    segment: "Enterprise",
-    status: "Completed",
-    workspaceId: "WS-1681",
-  },
-  {
-    active: "Yes",
-    completion: "87%",
-    currency: "USD",
-    customerEmail: "billing@signalstack.dev",
-    customerName: "SignalStack",
-    discountAmount: "$2,016",
-    discountRate: "3%",
-    id: 1014,
-    planPrice: "$1,400",
-    planTier: "Pro",
-    product: "Analytics Add-on",
-    region: "North America",
-    revenue: "$67,200",
-    seats: 48,
-    segment: "SMB",
-    status: "Active",
-    workspaceId: "WS-1708",
-  },
-  {
-    active: "Yes",
-    completion: "79%",
-    currency: "USD",
-    customerEmail: "finance@pillarops.com",
-    customerName: "Pillar Ops",
-    discountAmount: "$12,096",
-    discountRate: "6%",
-    id: 1015,
-    planPrice: "$2,800",
-    planTier: "Business",
-    product: "Reporting Suite",
-    region: "LATAM",
-    revenue: "$201,600",
-    seats: 72,
-    segment: "Mid-Market",
-    status: "Active",
-    workspaceId: "WS-1742",
-  },
-  {
-    active: "No",
-    completion: "31%",
-    currency: "USD",
-    customerEmail: "owner@sproutdesk.com",
-    customerName: "Sproutdesk",
-    discountAmount: "$720",
-    discountRate: "2%",
-    id: 1016,
-    planPrice: "$900",
-    planTier: "Starter",
-    product: "Starter Plan",
-    region: "North America",
-    revenue: "$36,000",
-    seats: 40,
-    segment: "SMB",
-    status: "Cancelled",
-    workspaceId: "WS-1801",
-  },
-  {
-    active: "Yes",
-    completion: "92%",
-    currency: "USD",
-    customerEmail: "admin@blueharbor.io",
-    customerName: "Blue Harbor",
-    discountAmount: "$27,648",
-    discountRate: "6%",
-    id: 1017,
-    planPrice: "$4,800",
-    planTier: "Enterprise",
-    product: "Enterprise Plan",
-    region: "North America",
-    revenue: "$460,800",
-    seats: 96,
-    segment: "Enterprise",
-    status: "Active",
-    workspaceId: "WS-1844",
-  },
-  {
-    active: "Yes",
-    completion: "70%",
-    currency: "USD",
-    customerEmail: "growth@kineticlabs.ai",
-    customerName: "Kinetic Labs",
-    discountAmount: "$5,760",
-    discountRate: "4%",
-    id: 1018,
-    planPrice: "$2,400",
-    planTier: "Business",
-    product: "API Access",
-    region: "APAC",
-    revenue: "$144,000",
-    seats: 60,
-    segment: "Mid-Market",
-    status: "Open",
-    workspaceId: "WS-1905",
-  },
-  {
-    active: "Yes",
-    completion: "84%",
-    currency: "EUR",
-    customerEmail: "workspace@sonarworks.eu",
-    customerName: "Sonar Works",
-    discountAmount: "€9,792",
-    discountRate: "6%",
-    id: 1019,
-    planPrice: "€2,550",
-    planTier: "Business",
-    product: "Business Plan",
-    region: "Europe",
-    revenue: "€163,200",
-    seats: 64,
-    segment: "Mid-Market",
-    status: "Active",
-    workspaceId: "WS-1946",
-  },
-  {
-    active: "Yes",
-    completion: "58%",
-    currency: "USD",
-    customerEmail: "accounts@terracotta.co",
-    customerName: "Terracotta",
-    discountAmount: "$1,920",
-    discountRate: "3%",
-    id: 1020,
-    planPrice: "$1,600",
-    planTier: "Pro",
-    product: "Pro Plan",
-    region: "North America",
-    revenue: "$64,000",
-    seats: 40,
-    segment: "SMB",
-    status: "At Risk",
-    workspaceId: "WS-2002",
-  },
-  {
-    active: "Yes",
-    completion: "97%",
-    currency: "USD",
-    customerEmail: "systems@vectorly.com",
-    customerName: "Vectorly",
-    discountAmount: "$11,520",
-    discountRate: "5%",
-    id: 1021,
-    planPrice: "$3,000",
-    planTier: "Business",
-    product: "Team Seats",
-    region: "North America",
-    revenue: "$230,400",
-    seats: 96,
-    segment: "Mid-Market",
-    status: "Completed",
-    workspaceId: "WS-2064",
-  },
-  {
-    active: "Yes",
-    completion: "81%",
-    currency: "USD",
-    customerEmail: "finance@opalcommerce.com",
-    customerName: "Opal Commerce",
-    discountAmount: "$14,112",
-    discountRate: "7%",
-    id: 1022,
-    planPrice: "$2,800",
-    planTier: "Business",
-    product: "Reporting Suite",
-    region: "North America",
-    revenue: "$201,600",
-    seats: 72,
-    segment: "Mid-Market",
-    status: "Active",
-    workspaceId: "WS-2109",
-  },
-  {
-    active: "No",
-    completion: "44%",
-    currency: "USD",
-    customerEmail: "support@redwoodapps.com",
-    customerName: "Redwood Apps",
-    discountAmount: "$2,016",
-    discountRate: "4%",
-    id: 1023,
-    planPrice: "$1,050",
-    planTier: "Starter",
-    product: "Starter Plan",
-    region: "North America",
-    revenue: "$50,400",
-    seats: 48,
-    segment: "SMB",
-    status: "Cancelled",
-    workspaceId: "WS-2148",
-  },
-  {
-    active: "Yes",
-    completion: "90%",
-    currency: "USD",
-    customerEmail: "admin@summitgrowth.com",
-    customerName: "Summit Growth",
-    discountAmount: "$38,400",
-    discountRate: "8%",
-    id: 1024,
-    planPrice: "$5,000",
-    planTier: "Enterprise",
-    product: "Enterprise Plan",
-    region: "North America",
-    revenue: "$480,000",
-    seats: 96,
-    segment: "Strategic",
-    status: "Active",
-    workspaceId: "WS-2200",
+    align: "right",
+    field: "date",
+    headerAlign: "right",
+    headerName: "Date",
+    sortable: true,
+    valueFormatter: (value: string) => formatDate(value),
+    width: 140,
   },
 ];
 
-const revenueColumns: GridColDef<RevenueRecord>[] = [
-  { field: "customerName", headerName: "Customer Name", minWidth: 180, flex: 1.1 },
-  { field: "customerEmail", headerName: "Customer Email", minWidth: 220, flex: 1.2 },
-  { field: "workspaceId", headerName: "Workspace ID", minWidth: 130 },
-  { field: "product", headerName: "Product / Plan", minWidth: 180, flex: 1 },
-  { field: "planTier", headerName: "Plan Tier", minWidth: 130 },
-  { field: "seats", headerName: "Seats", type: "number", minWidth: 90 },
-  { field: "completion", headerName: "Engagement", minWidth: 130 },
-  { field: "active", headerName: "Active", minWidth: 95 },
-  { field: "planPrice", headerName: "Plan Price", minWidth: 125 },
-  { field: "currency", headerName: "Currency", minWidth: 105 },
-  { field: "revenue", headerName: "Revenue", minWidth: 130 },
-  { field: "discountRate", headerName: "Discount Rate", minWidth: 135 },
-  { field: "discountAmount", headerName: "Discount Amount", minWidth: 155 },
-  { field: "region", headerName: "Region", minWidth: 140 },
-  { field: "segment", headerName: "Segment", minWidth: 130 },
-  { field: "status", headerName: "Status", minWidth: 120 },
+// DataGrid auto-injects a checkbox column (via `checkboxSelection`) sized by
+// `GRID_CHECKBOX_SELECTION_COL_DEF`. Spreading that default and overriding
+// just its width keeps its built-in selection behavior while giving it the
+// same explicit, fixed-width treatment as every other column.
+const dataGridColumns: GridColDef<RevenueGridRow>[] = [
+  { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 48 } as GridColDef<RevenueGridRow>,
+  ...revenueColumns,
 ];
 
 const Data = () => {
   const apiRef = useGridApiRef();
   const theme = useTheme();
+  const { settings } = useUserSettings();
+  const compactMode = settings?.compactMode ?? false;
+  const hasAppliedSavedPageSize = useRef(false);
+  const [rows, setRows] = useState<RevenueGridRow[]>([]);
+  const [rowCount, setRowCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    page: 0,
+    pageSize: 25,
+  });
+  const [sortModel, setSortModel] = useState<GridSortModel>([
+    { field: "date", sort: "desc" },
+  ]);
   const [filterModel, setFilterModel] = useState<GridFilterModel>({
     items: [],
     quickFilterLogicOperator: GridLogicOperator.Or,
@@ -534,6 +157,66 @@ const Data = () => {
   const activeFilterCount =
     filterModel.items.filter((item) => item.value != null && item.value !== "")
       .length + (searchValue ? 1 : 0);
+
+  const query = useMemo(
+    () => buildRevenueQuery(paginationModel, sortModel, filterModel, settings?.defaultTimeRange),
+    [paginationModel, sortModel, filterModel, settings?.defaultTimeRange]
+  );
+
+  // Apply the saved table page size once, the first time it becomes
+  // available, so it survives a refresh without overriding the person's
+  // in-session pagination choice on every settings re-fetch.
+  useEffect(() => {
+    if (hasAppliedSavedPageSize.current || !settings) {
+      return;
+    }
+
+    hasAppliedSavedPageSize.current = true;
+    setPaginationModel((current) => ({
+      ...current,
+      pageSize: settings.tablePageSize,
+    }));
+  }, [settings]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadRevenueRows = async () => {
+      setIsLoading(true);
+
+      try {
+        const response = await revenueRecords(query);
+
+        if (!isMounted) {
+          return;
+        }
+
+        const nextRows = Array.isArray(response?.rows)
+          ? response.rows.map(mapRevenueRow)
+          : [];
+
+        setRows(nextRows);
+        setRowCount(toNonNegativeInteger(response?.rowCount, nextRows.length));
+      } catch (error) {
+        reportApiError(error, "Revenue records");
+
+        if (isMounted) {
+          setRows([]);
+          setRowCount(0);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadRevenueRows();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [query]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -555,7 +238,10 @@ const Data = () => {
   };
 
   return (
-    <main className={scss.dataPage}>
+    <main
+      className={`${scss.dataPage} ${compactMode ? scss.compact : ""}`}
+      data-compact-mode={compactMode}
+    >
       <section className={scss.pageHeader}>
         <div>
           <Typography className={scss.eyebrow}>REVENUE DATA</Typography>
@@ -567,15 +253,10 @@ const Data = () => {
           </Typography>
         </div>
 
-        <Chip
-          className={scss.recordChip}
-          label={`${revenueRows.length.toLocaleString()} records`}
-          variant="outlined"
-        />
       </section>
 
       <Paper
-        className={scss.tableCard}
+        className={`${scss.tableCard} ${compactMode ? scss.compact : ""}`}
         sx={{
           border: "1px solid",
           borderColor: "divider",
@@ -641,17 +322,30 @@ const Data = () => {
             <DataGrid
               apiRef={apiRef}
               checkboxSelection
-              columns={revenueColumns}
+              columnHeaderHeight={compactMode ? 48 : 56}
+              columns={dataGridColumns}
+              density={compactMode ? "compact" : "standard"}
               disableRowSelectionOnClick
+              filterMode="server"
               filterModel={filterModel}
-              onFilterModelChange={setFilterModel}
-              pageSizeOptions={[10, 25, 50]}
-              rows={revenueRows}
-              initialState={{
-                pagination: {
-                  paginationModel: { pageSize: 25, page: 0 },
-                },
+              loading={isLoading}
+              onFilterModelChange={(model) => {
+                setFilterModel(model);
+                setPaginationModel((current) => ({ ...current, page: 0 }));
               }}
+              onPaginationModelChange={setPaginationModel}
+              onSortModelChange={(model) => {
+                setSortModel(model);
+                setPaginationModel((current) => ({ ...current, page: 0 }));
+              }}
+              pageSizeOptions={[25, 50, 100]}
+              paginationMode="server"
+              paginationModel={paginationModel}
+              rowCount={rowCount}
+              rowHeight={compactMode ? 44 : 56}
+              rows={rows}
+              sortingMode="server"
+              sortModel={sortModel}
               sx={{
                 "--DataGrid-containerBackground":
                   theme.palette.mode === "dark"
@@ -670,6 +364,10 @@ const Data = () => {
                       ? alpha(theme.palette.common.white, 0.03)
                       : alpha(theme.palette.grey[100], 0.82),
                 },
+                "& .MuiDataGrid-columnHeader:not(.MuiDataGrid-columnHeaderCheckbox)": {
+                  paddingLeft: "24px",
+                  paddingRight: "24px",
+                },
                 "& .MuiDataGrid-columnHeaderTitle": {
                   color: "text.secondary",
                   fontSize: "0.74rem",
@@ -680,6 +378,10 @@ const Data = () => {
                 "& .MuiDataGrid-cell": {
                   borderColor: "divider",
                   fontSize: "0.88rem",
+                },
+                "& .MuiDataGrid-cell:not(.MuiDataGrid-cellCheckbox)": {
+                  paddingLeft: "24px",
+                  paddingRight: "24px",
                 },
                 "& .MuiDataGrid-row": {
                   transition: "background-color 140ms ease",
@@ -716,6 +418,138 @@ const Data = () => {
       <Footer />
     </main>
   );
+};
+
+const mapRevenueRow = (row: RevenueRecordRow, index: number): RevenueGridRow => ({
+  accountOwner:
+    typeof row.account_owner === "string" ? row.account_owner : "Unassigned",
+  amount: toFiniteNumber(row.amount),
+  customerSegment:
+    typeof row.customer_segment === "string" ? row.customer_segment : "Unassigned",
+  customerName: typeof row.customer_name === "string" ? row.customer_name : "",
+  date: typeof row.date === "string" ? row.date : "",
+  id: toNonNegativeInteger(row.id, index),
+  region: typeof row.region === "string" ? row.region : "Unassigned",
+  status: isRevenueStatus(row.status) ? row.status : "LEAD",
+});
+
+const buildRevenueQuery = (
+  paginationModel: GridPaginationModel,
+  sortModel: GridSortModel,
+  filterModel: GridFilterModel,
+  defaultTimeRange?: DefaultTimeRange
+): RevenueRecordQuery => {
+  const sort = sortModel[0];
+  const dateRange = getDateRange(filterModel);
+  // An explicit date-column filter on the grid always wins; the saved
+  // dashboard range is only applied as a default when the person hasn't set
+  // their own date filter.
+  const hasExplicitDateFilter = Boolean(dateRange.startDate || dateRange.endDate);
+
+  return {
+    page: paginationModel.page,
+    size: paginationModel.pageSize,
+    search: getSearchFilter(filterModel),
+    sortBy: getSortField(sort?.field),
+    sortDirection: sort?.sort === "asc" ? "asc" : "desc",
+    status: getStatusFilter(filterModel),
+    range: hasExplicitDateFilter ? undefined : defaultTimeRange,
+    ...dateRange,
+  };
+};
+
+const getSortField = (
+  field: GridSortModel[number]["field"] | undefined
+): RevenueRecordQuery["sortBy"] => {
+  if (field === "amount" || field === "status") {
+    return field;
+  }
+  return "date";
+};
+
+const getSearchFilter = (filterModel: GridFilterModel): string | undefined => {
+  const value = String(filterModel.quickFilterValues?.[0] ?? "").trim();
+  return value || undefined;
+};
+
+const getStatusFilter = (
+  filterModel: GridFilterModel
+): RevenueStatus | undefined => {
+  const status = filterModel.items.find((item) => item.field === "status")?.value;
+  return isRevenueStatus(status) ? status : undefined;
+};
+
+const getDateRange = (
+  filterModel: GridFilterModel
+): Pick<RevenueRecordQuery, "startDate" | "endDate"> => {
+  return filterModel.items.reduce<Pick<RevenueRecordQuery, "startDate" | "endDate">>(
+    (range, item) => {
+      if (item.field !== "date" || !item.value) {
+        return range;
+      }
+
+      const value = String(item.value);
+      const operator = String(item.operator ?? "").toLowerCase();
+
+      if (operator.includes("after") || operator.includes(">")) {
+        return { ...range, startDate: value };
+      }
+
+      if (operator.includes("before") || operator.includes("<")) {
+        return { ...range, endDate: value };
+      }
+
+      return { startDate: value, endDate: value };
+    },
+    {}
+  );
+};
+
+const isRevenueStatus = (value: unknown): value is RevenueStatus => {
+  return (
+    value === "LEAD" ||
+    value === "NEGOTIATION" ||
+    value === "WON" ||
+    value === "LOST"
+  );
+};
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 2,
+    style: "currency",
+  }).format(toFiniteNumber(value));
+};
+
+const formatDate = (value: string): string => {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(`${value}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+};
+
+const toFiniteNumber = (value: unknown): number => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+};
+
+const toNonNegativeInteger = (value: unknown, fallback = 0): number => {
+  const numberValue = Number(value);
+  return Number.isInteger(numberValue) && numberValue >= 0
+    ? numberValue
+    : fallback;
 };
 
 export default Data;

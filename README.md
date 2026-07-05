@@ -1,6 +1,5 @@
 # Datara — Sales Analytics Dashboard
-Datara is a responsive front-end sales analytics dashboard built with Next.js, React, TypeScript, Material UI, and Chart.js.
-The project focuses on clean UI, dashboard-style layouts, interactive data visualization, responsive design, and modern front-end architecture.
+Datara is a full-stack sales analytics dashboard that helps teams monitor revenue, customer performance, and business insights through interactive data visualizations. It features secure authentication, customizable dashboard settings, responsive data tables, and dynamic KPI reporting, powered by a Java Spring Boot backend with PostgreSQL and a modern Next.js frontend.
 
 <img width="1899" height="916" alt="datara1" src="https://github.com/user-attachments/assets/426bdeaa-4383-46c8-ac1f-ecec5b267464" />
 

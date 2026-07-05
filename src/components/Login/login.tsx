@@ -13,8 +13,6 @@ import { alpha, useTheme } from "@mui/material/styles";
 import { login, register } from "@/lib/api/auth";
 import { ApiError, removeAuthToken, useHasAuthToken } from "@/lib/api/client";
 import { clearDemoMode, enableDemoMode } from "@/lib/demoMode";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   type CSSProperties,
   type FormEvent,
@@ -48,7 +46,6 @@ const activityItems = [
 
 const Login = () => {
   const hasAuthToken = useHasAuthToken();
-  const router = useRouter();
   const theme = useTheme();
   const [authMode, setAuthMode] = useState<AuthMode>("signIn");
   const [email, setEmail] = useState("");
@@ -108,15 +105,20 @@ const Login = () => {
             setFormError(
               `An account for ${normalizeEmail(submittedEmail)} already exists. Sign in with that email, or use a different email to create a new account.`
             );
+            setIsSubmitting(false);
             return;
           }
         }
       }
 
-      router.push("/dashboard");
+      // Hard navigation, not router.push: Next's client-side router can
+      // still be holding a cached (redirected) response for /dashboard from
+      // an earlier, unauthenticated soft-navigation attempt, which makes a
+      // soft push silently no-op here. A full navigation always hits the
+      // server fresh, where the auth cookie set just above is honored.
+      window.location.href = "/dashboard";
     } catch (error) {
       setFormError(getAuthErrorMessage(error, authMode));
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -141,7 +143,10 @@ const Login = () => {
         demoSlowTimerRef.current = null;
       }
 
-      router.push("/dashboard");
+      // Hard navigation for the same reason as handleCredentialsSubmit above:
+      // avoids a stale client-router cache entry for /dashboard silently
+      // no-op'ing the transition.
+      window.location.href = "/dashboard";
       setIsSubmitting(false);
       setIsDemoSlow(false);
     }
@@ -256,9 +261,13 @@ const Login = () => {
               <div className={scss.sessionActions}>
                 <Button
                   className={scss.primaryCta}
-                  component={Link}
                   endIcon={<ArrowForwardIcon />}
-                  href="/dashboard"
+                  onClick={() => {
+                    // Hard navigation - see handleCredentialsSubmit for why
+                    // a Next <Link>/router.push to /dashboard can silently
+                    // no-op here.
+                    window.location.href = "/dashboard";
+                  }}
                   variant="contained"
                 >
                   Continue to dashboard

@@ -369,9 +369,8 @@ const Login = () => {
                   <div className={scss.demoSlowNotice} role="status">
                     <InfoOutlinedIcon fontSize="small" />
                     <p>
-                      <strong>Demo server is hosted on a free tier.</strong>{" "}
-                      The first request can take 30-60 seconds while it wakes
-                      up from inactivity - thanks for your patience.
+                      <strong>The backend is hosted on Render's free tier.</strong>{" "}
+                    The first request may take 30-60 seconds while the server wakes up after inactivity. Please wait for the server to wake up.
                     </p>
                   </div>
                 )}

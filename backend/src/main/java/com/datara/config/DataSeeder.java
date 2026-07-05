@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@Profile("dev")
+@Profile({"dev", "prod"})
 @RequiredArgsConstructor
 public class DataSeeder implements ApplicationRunner {
 

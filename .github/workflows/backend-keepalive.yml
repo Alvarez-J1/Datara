@@ -1,0 +1,33 @@
+name: Backend keep-alive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Replace with the deployed Render backend origin, without a trailing slash.
+  # Example: https://datara-backend.onrender.com
+  RENDER_BACKEND_URL: "https://datara-t0aa.onrender.com"
+
+jobs:
+  ping-health:
+    name: Ping backend health
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping /api/health
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${RENDER_BACKEND_URL}" == "https://YOUR_RENDER_BACKEND_URL" ]]; then
+            echo "Skipping keep-alive until RENDER_BACKEND_URL is configured."
+            exit 0
+          fi
+
+          curl --fail --silent --show-error --max-time 20 \
+            "${RENDER_BACKEND_URL%/}/api/health"

@@ -1,4 +1,9 @@
-import { apiRequest, setAuthToken, setAuthUser } from "@/lib/api/client";
+import {
+  apiRequest,
+  type ApiRequestOptions,
+  setAuthToken,
+  setAuthUser,
+} from "@/lib/api/client";
 
 export type UserRole = "USER" | "ADMIN";
 
@@ -30,11 +35,17 @@ export type UpdateProfileRequest = {
   email: string;
 };
 
-export const login = async (request: LoginRequest): Promise<AuthResponse> => {
+type AuthRequestOptions = Pick<ApiRequestOptions, "signal">;
+
+export const login = async (
+  request: LoginRequest,
+  options: AuthRequestOptions = {}
+): Promise<AuthResponse> => {
   const response = await apiRequest<AuthResponse>("/api/auth/login", {
     auth: false,
     body: request,
     method: "POST",
+    signal: options.signal,
   });
 
   setAuthToken(response.token);

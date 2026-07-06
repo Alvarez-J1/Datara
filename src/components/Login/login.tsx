@@ -12,6 +12,7 @@ import TextField from "@mui/material/TextField";
 import { alpha, useTheme } from "@mui/material/styles";
 import { login, register } from "@/lib/api/auth";
 import { ApiError, removeAuthToken, useHasAuthToken } from "@/lib/api/client";
+import { waitForBackend, warmBackend } from "@/lib/api/health";
 import { clearDemoMode, enableDemoMode } from "@/lib/demoMode";
 import {
   type CSSProperties,
@@ -26,6 +27,8 @@ import scss from "./Login.module.scss";
 // login hasn't resolved by this point, we let the user know why it's taking
 // a while instead of leaving the button looking frozen.
 const DEMO_SLOW_LOAD_THRESHOLD_MS = 5000;
+const DEMO_TAKING_LONG_THRESHOLD_MS = 60000;
+const DEMO_LOGIN_TIMEOUT_MS = 15000;
 
 type AuthMode = "signIn" | "signUp";
 
@@ -51,10 +54,13 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [formError, setFormError] = useState("");
   const [isDemoSlow, setIsDemoSlow] = useState(false);
+  const [isDemoTakingLong, setIsDemoTakingLong] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const demoLongTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const demoSlowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isDemoOpeningRef = useRef(false);
   const isDark = theme.palette.mode === "dark";
   const isLoading = isSubmitting;
   const isSignedIn = hasAuthToken;
@@ -124,31 +130,55 @@ const Login = () => {
   };
 
   const handleDemoAccess = async () => {
+    if (isDemoOpeningRef.current) {
+      return;
+    }
+
+    isDemoOpeningRef.current = true;
     setIsSubmitting(true);
     setFormError("");
     setIsDemoSlow(false);
+    setIsDemoTakingLong(false);
     enableDemoMode();
 
     demoSlowTimerRef.current = setTimeout(() => {
       setIsDemoSlow(true);
     }, DEMO_SLOW_LOAD_THRESHOLD_MS);
 
+    demoLongTimerRef.current = setTimeout(() => {
+      setIsDemoSlow(true);
+      setIsDemoTakingLong(true);
+    }, DEMO_TAKING_LONG_THRESHOLD_MS);
+
+    let didStartNavigation = false;
+
     try {
-      await login({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
-    } catch {
-      // Demo mode still bypasses the frontend route guard if the backend is unavailable.
+      await waitForBackend();
+      await loginDemoUser();
+      didStartNavigation = true;
+      // Hard navigation for the same reason as handleCredentialsSubmit above:
+      // avoids a stale client-router cache entry for /dashboard silently
+      // no-op'ing the transition.
+      window.location.href = "/dashboard";
+    } catch (error) {
+      clearDemoMode();
+      removeAuthToken();
+      setFormError(getDemoAccessErrorMessage(error));
     } finally {
       if (demoSlowTimerRef.current) {
         clearTimeout(demoSlowTimerRef.current);
         demoSlowTimerRef.current = null;
       }
 
-      // Hard navigation for the same reason as handleCredentialsSubmit above:
-      // avoids a stale client-router cache entry for /dashboard silently
-      // no-op'ing the transition.
-      window.location.href = "/dashboard";
-      setIsSubmitting(false);
-      setIsDemoSlow(false);
+      if (demoLongTimerRef.current) {
+        clearTimeout(demoLongTimerRef.current);
+        demoLongTimerRef.current = null;
+      }
+
+      if (!didStartNavigation) {
+        setIsSubmitting(false);
+        isDemoOpeningRef.current = false;
+      }
     }
   };
 
@@ -158,9 +188,15 @@ const Login = () => {
   };
 
   useEffect(() => {
+    void warmBackend();
+
     return () => {
       if (demoSlowTimerRef.current) {
         clearTimeout(demoSlowTimerRef.current);
+      }
+
+      if (demoLongTimerRef.current) {
+        clearTimeout(demoLongTimerRef.current);
       }
     };
   }, []);
@@ -369,8 +405,10 @@ const Login = () => {
                   <div className={scss.demoSlowNotice} role="status">
                     <InfoOutlinedIcon fontSize="small" />
                     <p>
-                      <strong>The backend is hosted on Render's free tier.</strong>{" "}
-                    The first request may take 30-60 seconds while the server wakes up after inactivity. Please wait for the server to wake up.
+                      <strong>The backend is hosted on Render&apos;s free tier.</strong>{" "}
+                      {isDemoTakingLong
+                        ? "This is taking longer than expected, but Datara will continue automatically as soon as the server responds."
+                        : "The first request may take 30-60 seconds while the server wakes up after inactivity. Please wait for the server to wake up."}
                     </p>
                   </div>
                 )}
@@ -413,6 +451,30 @@ const isDuplicateEmailError = (error: unknown): boolean => {
 
 const normalizeEmail = (value: string): string => {
   return value.trim().toLowerCase();
+};
+
+const loginDemoUser = async (): Promise<void> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, DEMO_LOGIN_TIMEOUT_MS);
+
+  try {
+    await login(
+      { email: DEMO_EMAIL, password: DEMO_PASSWORD },
+      { signal: controller.signal }
+    );
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const getDemoAccessErrorMessage = (error: unknown): string => {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return "Unable to open the demo workspace. Please try again in a moment.";
 };
 
 export default Login;

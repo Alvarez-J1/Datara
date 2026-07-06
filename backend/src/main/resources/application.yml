@@ -8,9 +8,6 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   jpa:
     open-in-view: false
-    properties:
-      hibernate:
-        format_sql: true
   flyway:
     locations: classpath:db/migration
     baseline-on-migrate: false
@@ -43,5 +40,3 @@ datara:
 logging:
   level:
     org.springframework.security: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE

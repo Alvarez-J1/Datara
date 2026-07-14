@@ -52,6 +52,10 @@
   z-index: 1;
 }
 
+.tooltipAnchor {
+  display: inline-flex;
+}
+
 .label {
   color: inherit;
   font-size: 0.865rem;
@@ -74,7 +78,7 @@
 }
 
 .value {
-  font-size: clamp(2.33rem, 4.45vw, 3.22rem);
+  font-size: clamp(2.12rem, 3.85vw, 2.86rem);
   font-weight: 850;
   font-variation-settings: "wght" 850;
   letter-spacing: 0;
@@ -94,6 +98,7 @@
   gap: 4px;
   line-height: 1;
   padding: 7px 8px;
+  white-space: nowrap;
 }
 
 .contextRow {

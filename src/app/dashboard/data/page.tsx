@@ -56,6 +56,15 @@ const checkboxColumn = {
   width: 50,
 };
 
+const revenueStatusOptions: RevenueStatus[] = [
+  "WON",
+  "NEGOTIATION",
+  "QUALIFIED",
+  "LEAD",
+  "PROPOSAL",
+  "LOST",
+];
+
 const desktopRevenueColumns: GridColDef<RevenueGridRow>[] = [
   {
     align: "left",
@@ -99,6 +108,7 @@ const desktopRevenueColumns: GridColDef<RevenueGridRow>[] = [
   },
   {
     align: "left",
+    cellClassName: scss.revenueAmount,
     field: "amount",
     filterable: false,
     flex: 0.8,
@@ -111,14 +121,18 @@ const desktopRevenueColumns: GridColDef<RevenueGridRow>[] = [
   },
   {
     align: "left",
+    cellClassName: scss.statusCell,
     field: "status",
     flex: 0.75,
     headerAlign: "left",
     headerName: "Status",
-    minWidth: 112,
+    minWidth: 140,
+    renderCell: (params) => (
+      <StatusChip status={toRevenueStatus(params.value)} />
+    ),
     sortable: true,
     type: "singleSelect",
-    valueOptions: ["LEAD", "NEGOTIATION", "WON", "LOST"],
+    valueOptions: revenueStatusOptions,
   },
   {
     align: "left",
@@ -171,6 +185,7 @@ const scrollableRevenueColumns: GridColDef<RevenueGridRow>[] = [
   },
   {
     align: "left",
+    cellClassName: scss.revenueAmount,
     field: "amount",
     filterable: false,
     headerAlign: "left",
@@ -182,12 +197,16 @@ const scrollableRevenueColumns: GridColDef<RevenueGridRow>[] = [
   },
   {
     align: "left",
+    cellClassName: scss.statusCell,
     field: "status",
     headerAlign: "left",
     headerName: "Status",
+    renderCell: (params) => (
+      <StatusChip status={toRevenueStatus(params.value)} />
+    ),
     sortable: true,
     type: "singleSelect",
-    valueOptions: ["LEAD", "NEGOTIATION", "WON", "LOST"],
+    valueOptions: revenueStatusOptions,
     width: 145,
   },
   {
@@ -446,6 +465,11 @@ const Data = () => {
                   paddingLeft: "24px",
                   paddingRight: "24px",
                 },
+                [`& .${scss.statusCell}`]: {
+                  overflow: "visible",
+                  paddingLeft: "12px",
+                  paddingRight: "12px",
+                },
                 "& .MuiDataGrid-row": {
                   transition: "background-color 140ms ease",
                 },
@@ -528,13 +552,33 @@ const getSearchFilter = (filterModel: GridFilterModel): string | undefined => {
   return value || undefined;
 };
 
-const isRevenueStatus = (value: unknown): value is RevenueStatus => {
+const StatusChip = ({ status }: { status: RevenueStatus }) => {
+  const statusClassName = {
+    LEAD: scss.statusLead,
+    LOST: scss.statusLost,
+    NEGOTIATION: scss.statusNegotiation,
+    PROPOSAL: scss.statusProposal,
+    QUALIFIED: scss.statusQualified,
+    WON: scss.statusWon,
+  }[status];
+
   return (
-    value === "LEAD" ||
-    value === "NEGOTIATION" ||
-    value === "WON" ||
-    value === "LOST"
+    <span className={`${scss.statusChip} ${statusClassName}`}>
+      {formatStatus(status)}
+    </span>
   );
+};
+
+const toRevenueStatus = (value: unknown): RevenueStatus => {
+  return isRevenueStatus(value) ? value : "LEAD";
+};
+
+const isRevenueStatus = (value: unknown): value is RevenueStatus => {
+  return revenueStatusOptions.includes(value as RevenueStatus);
+};
+
+const formatStatus = (status: RevenueStatus): string => {
+  return status;
 };
 
 const formatCurrency = (value: number): string => {

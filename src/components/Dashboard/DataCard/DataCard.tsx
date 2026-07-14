@@ -2,8 +2,9 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
 import RemoveIcon from "@mui/icons-material/Remove";
 import SouthEastIcon from "@mui/icons-material/SouthEast";
-import { IconButton, Paper, Tooltip } from "@mui/material";
+import { ClickAwayListener, IconButton, Paper, Tooltip } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { useState } from "react";
 import scss from "./DataCard.module.scss";
 
 export type DataCardProps = {
@@ -29,6 +30,7 @@ const DataCard = ({
   value,
 }: DataCardProps) => {
   const theme = useTheme();
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const TrendIcon =
     trendTone === "negative"
       ? SouthEastIcon
@@ -59,11 +61,34 @@ const DataCard = ({
       <div className={scss.cardHeader}>
         <h2 className={scss.label}>{title}</h2>
 
-        <Tooltip title={description}>
-          <IconButton aria-label={`${title} details`} size="small">
-            <InfoOutlinedIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        <ClickAwayListener onClickAway={() => setIsTooltipOpen(false)}>
+          <span className={scss.tooltipAnchor}>
+            <Tooltip
+              disableFocusListener
+              disableHoverListener
+              disableTouchListener
+              onClose={() => setIsTooltipOpen(false)}
+              open={isTooltipOpen}
+              title={description}
+            >
+              <IconButton
+                aria-expanded={isTooltipOpen}
+                aria-label={`${title} details`}
+                onBlur={() => setIsTooltipOpen(false)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setIsTooltipOpen(true);
+                }}
+                onFocus={() => setIsTooltipOpen(true)}
+                onMouseEnter={() => setIsTooltipOpen(true)}
+                onMouseLeave={() => setIsTooltipOpen(false)}
+                size="small"
+              >
+                <InfoOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </span>
+        </ClickAwayListener>
       </div>
 
       <div className={scss.metricBlock}>

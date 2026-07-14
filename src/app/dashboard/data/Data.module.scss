@@ -44,10 +44,6 @@
   max-width: 720px;
 }
 
-.recordChip {
-  flex: 0 0 auto;
-}
-
 .tableCard {
   border-radius: 8px;
   display: flex;
@@ -140,6 +136,61 @@
   height: 760px;
   min-width: 1120px;
   width: 100%;
+}
+
+.revenueAmount {
+  color: #0f9f6e;
+  font-weight: 700;
+  font-variation-settings: "wght" 700;
+}
+
+.statusCell {
+  overflow: visible;
+}
+
+.statusChip {
+  align-items: center;
+  background: color-mix(in srgb, currentColor 11%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+  border-radius: 9999px;
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0.045em;
+  line-height: 1;
+  max-width: none;
+  min-width: max-content;
+  overflow: visible;
+  padding: 0 12px;
+  text-overflow: clip;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.statusWon {
+  color: #0f9f6e;
+}
+
+.statusNegotiation {
+  color: #c2410c;
+}
+
+.statusQualified {
+  color: #2563eb;
+}
+
+.statusLead {
+  color: #64748b;
+}
+
+.statusProposal {
+  color: #b45309;
+}
+
+.statusLost {
+  color: #dc2626;
 }
 
 .dataPage.compact .gridShell {

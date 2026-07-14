@@ -30,10 +30,10 @@ const drawerWidth = 248;
 const closedWidth = 72;
 
 const navigationItems = [
-  { href: "/dashboard", icon: <HomeIcon fontSize="small" />, label: "Overview" },
-  { href: "/dashboard/data", icon: <EqualizerIcon fontSize="small" />, label: "Data" },
-  { href: "/dashboard/profile", icon: <Person2Icon fontSize="small" />, label: "Profile" },
-  { href: "/dashboard/settings", icon: <SettingsIcon fontSize="small" />, label: "Settings" },
+  { href: "/dashboard", icon: <HomeIcon />, label: "Overview" },
+  { href: "/dashboard/data", icon: <EqualizerIcon />, label: "Data" },
+  { href: "/dashboard/profile", icon: <Person2Icon />, label: "Profile" },
+  { href: "/dashboard/settings", icon: <SettingsIcon />, label: "Settings" },
 ];
 
 const isActiveRoute = (pathname: string | null, href: string) => {
@@ -149,10 +149,13 @@ export default function SideMenu() {
                 >
                   <ListItemIcon
                     sx={{
+                      "& .MuiSvgIcon-root": {
+                        fontSize: 28,
+                      },
                       color: "inherit",
                       justifyContent: "center",
                       minWidth: 0,
-                      mr: open ? 1.5 : "auto",
+                      mr: open ? 1.5 : 0,
                     }}
                   >
                     {item.icon}
@@ -165,7 +168,11 @@ export default function SideMenu() {
                       </Typography>
                     }
                     sx={{
+                      flex: open ? "1 1 auto" : "0 0 0",
+                      minWidth: 0,
                       opacity: open ? 1 : 0,
+                      overflow: "hidden",
+                      width: open ? "auto" : 0,
                     }}
                   />
                 </ListItemButton>
@@ -195,13 +202,16 @@ export default function SideMenu() {
           >
             <ListItemIcon
               sx={{
+                "& .MuiSvgIcon-root": {
+                  fontSize: 28,
+                },
                 color: "inherit",
                 justifyContent: "center",
                 minWidth: 0,
-                mr: open ? 1.5 : "auto",
+                mr: open ? 1.5 : 0,
               }}
             >
-              <ExitToAppIcon fontSize="small" />
+              <ExitToAppIcon />
             </ListItemIcon>
             <ListItemText
               primary={
@@ -209,7 +219,13 @@ export default function SideMenu() {
                   Sign out
                 </Typography>
               }
-              sx={{ opacity: open ? 1 : 0 }}
+              sx={{
+                flex: open ? "1 1 auto" : "0 0 0",
+                minWidth: 0,
+                opacity: open ? 1 : 0,
+                overflow: "hidden",
+                width: open ? "auto" : 0,
+              }}
             />
           </ListItemButton>
         </Tooltip>

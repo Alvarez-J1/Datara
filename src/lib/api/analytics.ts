@@ -1,7 +1,13 @@
 import { apiRequest, type ChartData } from "@/lib/api/client";
 import type { DefaultTimeRange } from "@/lib/api/settings";
 
-export type RevenueStatus = "LEAD" | "NEGOTIATION" | "WON" | "LOST";
+export type RevenueStatus =
+  | "LEAD"
+  | "NEGOTIATION"
+  | "QUALIFIED"
+  | "PROPOSAL"
+  | "WON"
+  | "LOST";
 
 export type RevenueRecordRow = {
   id: number;

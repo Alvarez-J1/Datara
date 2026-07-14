@@ -204,6 +204,10 @@
   grid-column: 1 / -1;
 }
 
+.fullWidthField:global(.MuiFormControl-root) {
+  margin-top: 10px;
+}
+
 .preferenceRow {
   align-items: center;
   background: color-mix(in srgb, currentColor 3%, transparent);

@@ -75,6 +75,9 @@
   border-radius: 8px;
   color: color-mix(in srgb, currentColor 58%, transparent);
   flex: 0 0 auto;
+  font-size: 0.84rem;
+  font-weight: 600;
+  font-variation-settings: "wght" 600;
   padding: 8px 10px;
 }
 
@@ -109,6 +112,9 @@
 
 .railTitle {
   color: color-mix(in srgb, currentColor 58%, transparent);
+  font-size: 0.81rem;
+  font-weight: 700;
+  font-variation-settings: "wght" 700;
   margin-bottom: 2px;
 }
 
@@ -117,7 +123,9 @@
   border-radius: 8px;
   display: grid;
   gap: 14px;
+  overflow: hidden;
   padding: 14px;
+  position: relative;
   transition:
     border-color 160ms ease,
     transform 160ms ease;
@@ -128,15 +136,28 @@
   }
 }
 
+.insightItem::before {
+  background: #14b8a6;
+  content: "";
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
 .insightLabel {
   color: inherit;
+  font-size: 0.845rem;
+  font-weight: 700;
+  font-variation-settings: "wght" 700;
 }
 
 .insightContext {
   color: color-mix(in srgb, currentColor 58%, transparent);
   font-size: 0.82rem;
   line-height: 1.4;
-  margin-top: 6px;
+  margin: 6px 0 0;
 }
 
 .insightNumbers {
@@ -148,15 +169,37 @@
 
 .insightValue {
   font-size: 1.35rem;
-  font-weight: 760;
+  font-weight: 800;
+  font-variation-settings: "wght" 800;
   letter-spacing: 0;
   line-height: 1;
+  margin: 0;
 }
 
 .insightChange {
-  color: #0f9f6e;
+  align-items: center;
+  background: color-mix(in srgb, currentColor 11%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 8px;
+  display: inline-flex;
+  flex: 0 0 auto;
   font-size: 0.78rem;
   font-weight: 720;
+  gap: 4px;
+  line-height: 1;
+  padding: 7px 8px;
+}
+
+.positiveChange {
+  color: #0f9f6e;
+}
+
+.negativeChange {
+  color: #ef4444;
+}
+
+.neutralChange {
+  color: #f59e0b;
 }
 
 @media (max-width: 1040px) {

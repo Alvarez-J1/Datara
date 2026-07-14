@@ -13,9 +13,15 @@ import {
 } from "@/lib/api/dashboard";
 import { reportApiError, useHasAuthToken } from "@/lib/api/client";
 import { useDemoMode } from "@/lib/demoMode";
-import { useUserSettings } from "@/lib/api/settings";
+import { type DefaultTimeRange, useUserSettings } from "@/lib/api/settings";
 import { useEffect, useState } from "react";
 import scss from "./Dashboard.module.scss";
+
+const forecastRangeLabels: Record<DefaultTimeRange, string> = {
+  LAST_30_DAYS: "Last 30 Days",
+  LAST_90_DAYS: "Last 90 Days",
+  LAST_12_MONTHS: "Last 12 Months",
+};
 
 export default function Home() {
   const isDemoMode = useDemoMode();
@@ -54,6 +60,9 @@ export default function Home() {
     return <Login />;
   }
 
+  const forecastLabel =
+    dashboardPanels?.forecastActive.forecastLabel ?? forecastRangeLabels[timeRange];
+
   return (
     <Box
       component="main"
@@ -74,20 +83,16 @@ export default function Home() {
         </div>
 
         <div className={scss.heroPanel} aria-label="Forecast status">
-          <div className={scss.statusRow}>
-            <span className={scss.statusDot} />
-            <Typography className={scss.statusLabel}>
-              {dashboardPanels?.forecastActive
-                ? `Forecast active - ${dashboardPanels.forecastActive.forecastLabel}`
-                : "Forecast active"}
-            </Typography>
-          </div>
-          <Typography className={scss.heroPanelValue}>
+          <span className={scss.statusDot} aria-hidden="true" />
+          <span className={scss.statusLabel}>
+            {`Forecast active \u00b7 ${forecastLabel}`}
+          </span>
+          <p className={scss.heroPanelValue}>
             {dashboardPanels?.forecastActive.formattedForecastRevenue ?? "--"}
-          </Typography>
-          <Typography className={scss.heroPanelText}>
+          </p>
+          <p className={scss.heroPanelText}>
             {dashboardPanels?.forecastActive.forecastDescription ?? "--"}
-          </Typography>
+          </p>
         </div>
       </section>
 

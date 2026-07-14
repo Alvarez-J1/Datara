@@ -1,5 +1,8 @@
 "use client";
 
+import NorthEastIcon from "@mui/icons-material/NorthEast";
+import RemoveIcon from "@mui/icons-material/Remove";
+import SouthEastIcon from "@mui/icons-material/SouthEast";
 import { Grid, Paper, Typography } from "@mui/material";
 import type { ChartConfiguration } from "chart.js";
 import DataChart from "@/components/DataChart/DataChart";
@@ -197,7 +200,7 @@ const TransactionsPerDay = ({
               Revenue growth is outperforming projections
               </Typography>
             </div>
-            <Typography className={scss.period}>{rangeLabels[selectedRange]}</Typography>
+            <span className={scss.period}>{rangeLabels[selectedRange]}</span>
           </div>
 
           <div className={scss.chartBody}>
@@ -210,20 +213,23 @@ const TransactionsPerDay = ({
             </div>
 
             <aside className={scss.insightRail} aria-label="Revenue trend highlights">
-              <Typography className={scss.railTitle}>Pipeline metrics</Typography>
+              <h3 className={scss.railTitle}>Pipeline metrics</h3>
               {insightMetrics.map((metric) => (
                 <div className={scss.insightItem} key={metric.key}>
                   <div>
-                    <Typography className={scss.insightLabel}>{metric.label}</Typography>
-                    <Typography className={scss.insightContext}>
+                    <h4 className={scss.insightLabel}>{metric.label}</h4>
+                    <p className={scss.insightContext}>
                       {metric.context}
-                    </Typography>
+                    </p>
                   </div>
                   <div className={scss.insightNumbers}>
-                    <Typography className={scss.insightValue}>{metric.value}</Typography>
-                    <Typography className={scss.insightChange}>
+                    <p className={scss.insightValue}>{metric.value}</p>
+                    <span
+                      className={`${scss.insightChange} ${scss[getInsightChangeTone(metric.change)]}`}
+                    >
+                      <InsightChangeIcon change={metric.change} />
                       {metric.change}
-                    </Typography>
+                    </span>
                   </div>
                 </div>
               ))}
@@ -233,6 +239,32 @@ const TransactionsPerDay = ({
       </Grid>
     </Grid>
   );
+};
+
+const getInsightChangeTone = (
+  change: string
+): "negativeChange" | "neutralChange" | "positiveChange" => {
+  if (change.trim().startsWith("-")) {
+    return "negativeChange";
+  }
+
+  if (change.trim().startsWith("+")) {
+    return "positiveChange";
+  }
+
+  return "neutralChange";
+};
+
+const InsightChangeIcon = ({ change }: { change: string }) => {
+  if (change.trim().startsWith("-")) {
+    return <SouthEastIcon fontSize="inherit" />;
+  }
+
+  if (change.trim().startsWith("+")) {
+    return <NorthEastIcon fontSize="inherit" />;
+  }
+
+  return <RemoveIcon fontSize="inherit" />;
 };
 
 const isChartResponseUsable = (

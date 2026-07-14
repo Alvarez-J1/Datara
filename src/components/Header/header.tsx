@@ -1,7 +1,7 @@
 "use client";
 
 import { ColorModeContext } from "@/app/providers";
-import AdbIcon from "@mui/icons-material/Adb";
+import DataraLogo from "@/components/Brand/DataraLogo";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LightModeIcon from "@mui/icons-material/LightMode";
@@ -17,7 +17,6 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
 import { clearDemoMode, useDemoMode } from "@/lib/demoMode";
 import { removeAuthToken, useAuthUser, useHasAuthToken } from "@/lib/api/client";
 import Link from "next/link";
@@ -38,7 +37,6 @@ const Header = () => {
   const isDemoMode = useDemoMode();
   const hasAuthToken = useHasAuthToken();
   const authUser = useAuthUser();
-  const theme = useTheme();
   const pathname = usePathname();
   const tabletCheck = useMediaQuery("(min-width:768px)");
   const colorMode = useContext(ColorModeContext);
@@ -104,52 +102,18 @@ const Header = () => {
               alignItems: "center",
               color: "inherit",
               display: "flex",
-              gap: 1.2,
               minWidth: 0,
               textDecoration: "none",
             }}
           >
-            <Box
+            <DataraLogo
+              alt="Datara dashboard"
+              variant="responsive"
               sx={{
-                alignItems: "center",
-                backgroundColor: "text.primary",
-                borderRadius: "8px",
-                color: "background.paper",
-                display: "inline-flex",
                 height: 34,
-                justifyContent: "center",
-                width: 34,
+                maxWidth: { xs: 34, sm: 148 },
               }}
-            >
-              <AdbIcon fontSize="small" />
-            </Box>
-
-            <Box sx={{ display: { xs: "none", sm: "block" }, minWidth: 0 }}>
-              <Typography
-                noWrap
-                sx={{
-                  fontFamily: "var(--font-geist-mono)",
-                  fontSize: "1rem",
-                  fontWeight: 780,
-                  letterSpacing: "0.18em",
-                  lineHeight: 1,
-                }}
-              >
-                Datara
-              </Typography>
-              <Typography
-                noWrap
-                sx={{
-                  color: "text.secondary",
-                  fontSize: "0.72rem",
-                  fontWeight: 650,
-                  letterSpacing: "0.04em",
-                  mt: 0.4,
-                }}
-              >
-                Revenue analytics
-              </Typography>
-            </Box>
+            />
           </Box>
 
           {hasWorkspaceAccess && tabletCheck && (

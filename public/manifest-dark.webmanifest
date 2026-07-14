@@ -1,0 +1,17 @@
+{
+  "name": "Datara",
+  "short_name": "Datara",
+  "description": "Sales Analytics Dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050b12",
+  "theme_color": "#050b12",
+  "icons": [
+    {
+      "src": "/datara-favicon-light.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

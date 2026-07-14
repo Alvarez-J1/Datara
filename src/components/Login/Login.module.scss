@@ -46,15 +46,10 @@
 .brandBadge {
   align-items: center;
   display: inline-flex;
-  font-family: var(--font-geist-mono);
-  font-size: 0.95rem;
-  font-weight: 780;
-  gap: 10px;
-  letter-spacing: 0.18em;
+  line-height: 0;
   width: fit-content;
 }
 
-.bugMark,
 .cardIcon {
   align-items: center;
   background: var(--auth-text);
@@ -62,11 +57,6 @@
   color: var(--auth-panel);
   display: inline-flex;
   justify-content: center;
-}
-
-.bugMark {
-  height: 34px;
-  width: 34px;
 }
 
 .brandCopy {
@@ -400,35 +390,73 @@
 }
 
 .demoAccess {
-  background: color-mix(in srgb, var(--auth-text) 3%, transparent);
-  border: 1px solid color-mix(in srgb, var(--auth-text) 9%, transparent);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--auth-accent) 15%, var(--auth-panel)) 0%,
+      color-mix(in srgb, var(--auth-accent) 6%, var(--auth-panel)) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--auth-accent) 26%, transparent);
   border-radius: 8px;
-  color: var(--auth-muted);
-  margin: -4px 0 0;
-  max-width: none;
-  padding: 12px;
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--auth-accent) 8%, transparent);
+  color: var(--auth-text);
+  display: grid;
+  gap: 10px;
+  margin: 0 0 2px auto;
+  max-width: 460px;
+  padding: 14px;
   text-align: center;
   width: 100%;
 }
 
 .demoAccess span {
   display: block;
-  font-size: 0.76rem;
-  line-height: 1.4;
-  margin-top: 8px;
+  color: var(--auth-muted);
+  font-size: 0.86rem;
+  font-weight: 620;
+  line-height: 1.45;
 }
 
 .demoCta:global(.MuiButton-root) {
-  color: var(--auth-muted);
-  font-size: 0.82rem;
-  font-weight: 740;
-  min-height: 36px;
-  padding-inline: 14px;
+  background: linear-gradient(
+    135deg,
+    var(--auth-accent),
+    color-mix(in srgb, var(--auth-accent) 76%, var(--auth-text))
+  );
+  box-shadow: 0 9px 16px color-mix(in srgb, var(--auth-accent) 18%, transparent);
+  color: #ffffff;
+  font-size: 0.94rem;
+  font-weight: 780;
+  letter-spacing: 0;
+  min-height: 54px;
+  padding-inline: 18px;
   text-transform: none;
+  transition:
+    box-shadow 180ms ease,
+    transform 180ms ease;
+  width: 100%;
+
+  :global(.MuiButton-endIcon) {
+    transition: transform 180ms ease;
+  }
 
   &:hover {
-    background: color-mix(in srgb, var(--auth-text) 5%, transparent);
-    color: var(--auth-text);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--auth-accent) 92%, white),
+      color-mix(in srgb, var(--auth-accent) 68%, var(--auth-text))
+    );
+    box-shadow: 0 11px 20px color-mix(in srgb, var(--auth-accent) 20%, transparent);
+    transform: translateY(-1px);
+  }
+
+  &:hover :global(.MuiButton-endIcon) {
+    transform: translateX(4px);
+  }
+
+  &:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--auth-accent) 34%, transparent);
+    outline-offset: 3px;
   }
 }
 
@@ -441,7 +469,7 @@
   color: var(--auth-text);
   display: flex;
   gap: 10px;
-  margin: -4px 0 0;
+  margin: 2px 0 0;
   padding: 12px 14px;
   width: 100%;
 }
@@ -492,10 +520,6 @@
 
   .brandColumn {
     gap: 20px;
-  }
-
-  .brandBadge {
-    font-size: 0.85rem;
   }
 
   .brandCopy h1 {

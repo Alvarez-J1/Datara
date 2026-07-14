@@ -32,6 +32,19 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   weeklyReport: true,
 };
 
+const BRAND_ASSETS = {
+  dark: {
+    favicon: "/datara-favicon-light.svg",
+    manifest: "/manifest-dark.webmanifest",
+    themeColor: "#050b12",
+  },
+  light: {
+    favicon: "/datara-favicon-light.svg",
+    manifest: "/manifest-light.webmanifest",
+    themeColor: "#ffffff",
+  },
+} as const;
+
 export const ColorModeContext = createContext<ColorModeContextValue>({
   isSavingTheme: false,
   resolvedMode: "light" as "dark" | "light",
@@ -85,6 +98,7 @@ function ThemeModeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ColorModeContext.Provider value={colorMode}>
+      <DataraBrandMetadata mode={mode} />
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}
@@ -92,6 +106,95 @@ function ThemeModeProvider({ children }: { children: React.ReactNode }) {
     </ColorModeContext.Provider>
   );
 }
+
+function DataraBrandMetadata({ mode }: { mode: "dark" | "light" }) {
+  useEffect(() => {
+    const assets = BRAND_ASSETS[mode];
+
+    document
+      .querySelectorAll(
+        [
+          "link[data-datara-static-icon]",
+          'link[rel="manifest"]:not([data-datara-managed])',
+          "meta[data-datara-static-theme-color]",
+        ].join(", ")
+      )
+      .forEach((element) => element.remove());
+
+    const iconLink = ensureLinkElement("icon", "icon");
+    iconLink.href = assets.favicon;
+    iconLink.type = "image/svg+xml";
+
+    const shortcutIconLink = ensureLinkElement(
+      "shortcut-icon",
+      "shortcut icon"
+    );
+    shortcutIconLink.href = assets.favicon;
+    shortcutIconLink.type = "image/svg+xml";
+
+    const manifestLink = ensureLinkElement("manifest", "manifest");
+    manifestLink.href = assets.manifest;
+
+    const themeColorMeta = ensureMetaElement("theme-color", "theme-color");
+    themeColorMeta.content = assets.themeColor;
+  }, [mode]);
+
+  return null;
+}
+
+const ensureLinkElement = (key: string, rel: string): HTMLLinkElement => {
+  const selector = `link[data-datara-managed="${key}"]`;
+  const existing = document.head.querySelector<HTMLLinkElement>(selector);
+
+  if (existing) {
+    existing.rel = rel;
+    return existing;
+  }
+
+  const matchingRel = document.head.querySelector<HTMLLinkElement>(
+    `link[rel="${rel}"]`
+  );
+
+  if (matchingRel) {
+    matchingRel.dataset.dataraManaged = key;
+    matchingRel.rel = rel;
+    return matchingRel;
+  }
+
+  const link = document.createElement("link");
+  link.dataset.dataraManaged = key;
+  link.rel = rel;
+  document.head.appendChild(link);
+
+  return link;
+};
+
+const ensureMetaElement = (key: string, name: string): HTMLMetaElement => {
+  const selector = `meta[data-datara-managed="${key}"]`;
+  const existing = document.head.querySelector<HTMLMetaElement>(selector);
+
+  if (existing) {
+    existing.name = name;
+    return existing;
+  }
+
+  const matchingName = document.head.querySelector<HTMLMetaElement>(
+    `meta[name="${name}"]`
+  );
+
+  if (matchingName) {
+    matchingName.dataset.dataraManaged = key;
+    matchingName.name = name;
+    return matchingName;
+  }
+
+  const meta = document.createElement("meta");
+  meta.dataset.dataraManaged = key;
+  meta.name = name;
+  document.head.appendChild(meta);
+
+  return meta;
+};
 
 /**
  * When the browser restores a page from its back/forward cache (bfcache) -

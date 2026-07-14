@@ -56,54 +56,70 @@
 }
 
 .heroPanel {
-  background: color-mix(in srgb, currentColor 3%, transparent);
-  border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  background: rgba(20, 184, 166, 0.06);
+  border: 1px solid rgba(20, 184, 166, 0.32);
   border-radius: 8px;
   display: grid;
-  gap: 10px;
-  padding: 18px;
+  column-gap: 8px;
+  grid-template-columns: 8px minmax(0, 1fr);
+  grid-template-rows: auto 9px auto 14px auto 5px;
+  justify-items: start;
+  padding: 22px;
+  row-gap: 0;
+  text-align: left;
 }
 
 .dashboardHero.compact .heroPanel {
-  gap: 8px;
-  padding: 14px;
-}
-
-.statusRow {
-  align-items: flex-start;
-  display: flex;
-  gap: 8px;
+  grid-template-rows: auto 5px auto 10px auto 5px;
+  padding: 16px;
 }
 
 .statusDot {
+  align-self: center;
   background: #14b8a6;
   border-radius: 999px;
   flex: 0 0 auto;
+  grid-column: 1;
+  grid-row: 1;
   height: 8px;
-  margin-top: 6px;
+  justify-self: start;
   width: 8px;
 }
 
 .statusLabel {
   color: color-mix(in srgb, currentColor 58%, transparent);
+  display: inline-block;
   font-size: 0.78rem;
-  font-weight: 720;
+  font-weight: 700;
+  font-variation-settings: "wght" 700;
+  grid-column: 2;
+  grid-row: 1;
   letter-spacing: 0.08em;
   line-height: 1.2;
   text-transform: uppercase;
 }
 
 .heroPanelValue {
-  font-size: 2.1rem;
-  font-weight: 780;
+  font-size: 2.68rem;
+  font-weight: 820;
+  font-variation-settings: "wght" 820;
+  grid-column: 2;
+  grid-row: 3;
   letter-spacing: 0;
-  line-height: 1;
+  line-height: 0.95;
+  margin: 0;
+  text-indent: -0.12em;
 }
 
 .heroPanelText {
   color: color-mix(in srgb, currentColor 60%, transparent);
-  font-size: 0.9rem;
+  font-size: 0.94rem;
+  font-weight: 480;
+  font-variation-settings: "wght" 480;
+  grid-column: 2;
+  grid-row: 5;
   line-height: 1.45;
+  margin: 0;
 }
 
 .dashboardStack {

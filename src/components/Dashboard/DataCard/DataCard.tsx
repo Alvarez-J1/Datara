@@ -2,8 +2,8 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
 import RemoveIcon from "@mui/icons-material/Remove";
 import SouthEastIcon from "@mui/icons-material/SouthEast";
-import { IconButton, Paper, Tooltip, Typography } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
+import { IconButton, Paper, Tooltip } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import scss from "./DataCard.module.scss";
 
 export type DataCardProps = {
@@ -19,7 +19,6 @@ export type DataCardProps = {
 };
 
 const DataCard = ({
-  accent,
   compact = false,
   context,
   description,
@@ -50,7 +49,7 @@ const DataCard = ({
       sx={{
         backgroundColor: "background.paper",
         border: "1px solid",
-        borderColor: alpha(accent, theme.palette.mode === "dark" ? 0.18 : 0.12),
+        borderColor: "divider",
         boxShadow:
           theme.palette.mode === "dark"
             ? "0 10px 24px rgba(0, 0, 0, 0.18)"
@@ -58,9 +57,7 @@ const DataCard = ({
       }}
     >
       <div className={scss.cardHeader}>
-        <Typography className={scss.label} component="h2">
-          {title}
-        </Typography>
+        <h2 className={scss.label}>{title}</h2>
 
         <Tooltip title={description}>
           <IconButton aria-label={`${title} details`} size="small">
@@ -70,7 +67,7 @@ const DataCard = ({
       </div>
 
       <div className={scss.metricBlock}>
-        <Typography className={scss.value}>{value}</Typography>
+        <p className={scss.value}>{value}</p>
         <span className={scss.trendPill} style={{ color: trendColor }}>
           <TrendIcon fontSize="inherit" />
           {trend}
@@ -78,8 +75,8 @@ const DataCard = ({
       </div>
 
       <div className={scss.contextRow}>
-        <Typography className={scss.context}>{context}</Typography>
-        <Typography className={scss.trendLabel}>{trendLabel}</Typography>
+        <p className={scss.context}>{context}</p>
+        <p className={scss.trendLabel}>{trendLabel}</p>
       </div>
     </Paper>
   );

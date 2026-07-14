@@ -18,8 +18,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "Datara",
   title: "Datara",
   description: "Sales Analytics Dashboard",
+  manifest: "/manifest-light.webmanifest",
 };
 
 export default function RootLayout({
@@ -30,6 +32,34 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        <link
+          data-datara-static-icon="light"
+          href="/datara-favicon-light.svg"
+          media="(prefers-color-scheme: light)"
+          rel="icon"
+          type="image/svg+xml"
+        />
+        <link
+          data-datara-static-icon="dark"
+          href="/datara-favicon-light.svg"
+          media="(prefers-color-scheme: dark)"
+          rel="icon"
+          type="image/svg+xml"
+        />
+        <meta
+          content="#ffffff"
+          data-datara-static-theme-color="light"
+          media="(prefers-color-scheme: light)"
+          name="theme-color"
+        />
+        <meta
+          content="#050b12"
+          data-datara-static-theme-color="dark"
+          media="(prefers-color-scheme: dark)"
+          name="theme-color"
+        />
+      </head>
       <body>
           <AppRouterCacheProvider>
       <Providers>

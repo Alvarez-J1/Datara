@@ -1,6 +1,6 @@
 "use client";
 
-import AdbIcon from "@mui/icons-material/Adb";
+import DataraLogo from "@/components/Brand/DataraLogo";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -55,6 +55,7 @@ const Login = () => {
   const [formError, setFormError] = useState("");
   const [isDemoSlow, setIsDemoSlow] = useState(false);
   const [isDemoTakingLong, setIsDemoTakingLong] = useState(false);
+  const [isOpeningDemo, setIsOpeningDemo] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -135,6 +136,7 @@ const Login = () => {
     }
 
     isDemoOpeningRef.current = true;
+    setIsOpeningDemo(true);
     setIsSubmitting(true);
     setFormError("");
     setIsDemoSlow(false);
@@ -177,6 +179,7 @@ const Login = () => {
 
       if (!didStartNavigation) {
         setIsSubmitting(false);
+        setIsOpeningDemo(false);
         isDemoOpeningRef.current = false;
       }
     }
@@ -221,10 +224,7 @@ const Login = () => {
       <div className={scss.authLayout}>
         <div className={scss.brandColumn}>
           <div className={scss.brandBadge}>
-            <span className={scss.bugMark}>
-              <AdbIcon fontSize="small" />
-            </span>
-            <span>Datara</span>
+            <DataraLogo sx={{ height: 34, maxWidth: 148 }} />
           </div>
 
           <div className={scss.brandCopy}>
@@ -276,6 +276,36 @@ const Login = () => {
         </div>
 
         <div className={scss.cardColumn}>
+          {!isSignedIn && (
+            <>
+              <div className={scss.demoAccess}>
+                <Button
+                  className={scss.demoCta}
+                  disabled={isLoading}
+                  endIcon={<ArrowForwardIcon />}
+                  onClick={handleDemoAccess}
+                  variant="contained"
+                >
+                  {isOpeningDemo ? "Opening demo..." : "View Demo Workspace"}
+                </Button>
+                <span>Explore the dashboard instantly, no account required.</span>
+
+                {isDemoSlow && (
+                  <div className={scss.demoSlowNotice} role="status">
+                    <InfoOutlinedIcon fontSize="small" />
+                    <p>
+                      <strong>The backend is hosted on Render&apos;s free tier.</strong>{" "}
+                      {isDemoTakingLong
+                        ? "This is taking longer than expected, but Datara will continue automatically as soon as the server responds."
+                        : "The first request may take 30-60 seconds while the server wakes up after inactivity. Please wait for the server to wake up."}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+            </>
+          )}
+
           <div className={scss.authCard}>
             <div className={scss.cardIcon}>
               <LockOutlinedIcon fontSize="small" />
@@ -388,30 +418,6 @@ const Login = () => {
                         : "Sign Up"}
                   </Button>
                 </form>
-
-                <div className={scss.demoAccess}>
-                  <Button
-                    className={scss.demoCta}
-                    disabled={isLoading}
-                    onClick={handleDemoAccess}
-                    variant="text"
-                  >
-                    {isSubmitting ? "Opening demo..." : "View Demo Workspace"}
-                  </Button>
-                  <span>Skip sign in and explore Datara with preloaded sample data.</span>
-                </div>
-
-                {isDemoSlow && (
-                  <div className={scss.demoSlowNotice} role="status">
-                    <InfoOutlinedIcon fontSize="small" />
-                    <p>
-                      <strong>The backend is hosted on Render&apos;s free tier.</strong>{" "}
-                      {isDemoTakingLong
-                        ? "This is taking longer than expected, but Datara will continue automatically as soon as the server responds."
-                        : "The first request may take 30-60 seconds while the server wakes up after inactivity. Please wait for the server to wake up."}
-                    </p>
-                  </div>
-                )}
               </>
             )}
 

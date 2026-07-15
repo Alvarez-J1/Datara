@@ -1,7 +1,8 @@
 # Datara — Sales Analytics Dashboard
 Datara is a full-stack sales analytics dashboard that helps teams monitor revenue, customer performance, and business insights through interactive data visualizations. It features secure authentication, customizable dashboard settings, responsive data tables, and dynamic KPI reporting, powered by a Java Spring Boot backend with PostgreSQL and a modern Next.js frontend.
 
-<img width="1899" height="916" alt="datara1" src="https://github.com/user-attachments/assets/426bdeaa-4383-46c8-ac1f-ecec5b267464" />
+<img width="1518" height="727" alt="image" src="https://github.com/user-attachments/assets/cb3b25bc-8d57-4fc3-a0cb-4c4526162ee0" />
+
 
 ## Live Demo
 
@@ -33,16 +34,13 @@ React • Next.js • TypeScript • Material UI • Chart.js • SCSS • Java 
 - Structuring a modern front-end project
 
 ## Screenshots
-## Desktop View
-<img width="1899" height="916" alt="datara1" src="https://github.com/user-attachments/assets/0887baa4-6363-41e0-8d6f-39f9251016e1" />
-
-
 
 ## Data Page
-<img width="1896" height="914" alt="Screenshot 2026-06-09 092208" src="https://github.com/user-attachments/assets/c4a4459c-8491-48b9-b668-674abef6cbf5" />
+<img width="1517" height="728" alt="image" src="https://github.com/user-attachments/assets/f73b59b0-2bde-48b1-932f-92c10e58d117" />
 
 ## Mobile View
-<img width="503" height="773" alt="image" src="https://github.com/user-attachments/assets/2fd75501-140e-4185-b9ad-fd8897d4fab9" />
+<img width="362" height="647" alt="image" src="https://github.com/user-attachments/assets/16f3b765-4747-49ca-9adb-3f4f3285d940" />
+
 
 ## Getting Started
 

@@ -7,6 +7,59 @@
   margin-bottom: 20px;
 }
 
+.averageDealSizeTooltip {
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid color-mix(in srgb, var(--data-card-accent, #f59e0b) 28%, transparent);
+  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  color: #f8fafc;
+  display: grid;
+  gap: 2px;
+  line-height: 1.12;
+  opacity: 0;
+  padding: 5px 7px;
+  pointer-events: none;
+  position: absolute;
+  transform: translateY(3px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+  white-space: nowrap;
+  z-index: 4;
+}
+
+.averageDealSizeTooltip::after {
+  background: rgba(15, 23, 42, 0.96);
+  border-bottom: 1px solid color-mix(in srgb, var(--data-card-accent, #f59e0b) 28%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--data-card-accent, #f59e0b) 28%, transparent);
+  bottom: -3px;
+  content: "";
+  height: 5px;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%) rotate(45deg);
+  width: 5px;
+}
+
+.averageDealSizeTooltipVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.averageDealSizeTooltipMonth {
+  color: color-mix(in srgb, var(--data-card-accent, #f59e0b) 78%, #ffffff);
+  font-size: 0.58rem;
+  font-weight: 760;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.averageDealSizeTooltipValue {
+  color: #f8fafc;
+  font-size: 0.64rem;
+  font-weight: 650;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;

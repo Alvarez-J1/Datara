@@ -119,6 +119,8 @@
 }
 
 .insightItem {
+  --pipeline-accent: #22d3ee;
+
   border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
   border-radius: 8px;
   display: grid;
@@ -128,22 +130,41 @@
   position: relative;
   transition:
     border-color 160ms ease,
+    box-shadow 160ms ease,
     transform 160ms ease;
 
   &:hover {
-    border-color: color-mix(in srgb, #14b8a6 28%, transparent);
+    border-color: color-mix(in srgb, var(--pipeline-accent) 32%, transparent);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--pipeline-accent) 10%, transparent);
     transform: translateY(-1px);
   }
 }
 
+.insightItem:focus-within {
+  border-color: color-mix(in srgb, var(--pipeline-accent) 42%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pipeline-accent) 12%, transparent);
+}
+
 .insightItem::before {
-  background: #14b8a6;
+  background: var(--pipeline-accent);
   content: "";
   height: 3px;
   left: 0;
   position: absolute;
   right: 0;
   top: 0;
+}
+
+.cyanAccent {
+  --pipeline-accent: #22d3ee;
+}
+
+.emeraldAccent {
+  --pipeline-accent: #10b981;
+}
+
+.amberAccent {
+  --pipeline-accent: #f59e0b;
 }
 
 .insightLabel {

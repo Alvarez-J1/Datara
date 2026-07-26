@@ -48,35 +48,23 @@ class DashboardServiceTest {
         LocalDate previousStart = RANGE.previousStartDate(today);
         LocalDate previousEnd = currentStart;
 
-        // Net revenue: $1,600 won in the last 30 days vs $1,200 won the 30 days before that (+33.33%).
-        when(revenueRepository.sumAmountByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.WON, currentStart, currentEnd
-        )).thenReturn(new BigDecimal("1600.00"));
-        when(revenueRepository.sumAmountByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.WON, previousStart, previousEnd
-        )).thenReturn(new BigDecimal("1200.00"));
-
-        // Customers: 5 distinct customers in-range vs 4 in the prior window (+25%).
-        when(revenueRepository.countDistinctCustomersByUserIdBetweenDates(
+        when(revenueRepository.findByUserIdBetweenDates(
             USER_ID, currentStart, currentEnd
-        )).thenReturn(5L);
-        when(revenueRepository.countDistinctCustomersByUserIdBetweenDates(
+        )).thenReturn(List.of(
+            revenueRecord(1L, "Alpha", "400.00", RevenueStatus.WON, currentStart),
+            revenueRecord(2L, "Beta", "400.00", RevenueStatus.WON, currentStart.plusDays(1)),
+            revenueRecord(3L, "Gamma", "400.00", RevenueStatus.WON, currentStart.plusDays(2)),
+            revenueRecord(4L, "Delta", "400.00", RevenueStatus.WON, currentStart.plusDays(3)),
+            revenueRecord(5L, "Epsilon", "250.00", RevenueStatus.LOST, currentStart.plusDays(4))
+        ));
+        when(revenueRepository.findByUserIdBetweenDates(
             USER_ID, previousStart, previousEnd
-        )).thenReturn(4L);
-
-        // Won/lost deal counts drive both avg deal size and win rate.
-        when(revenueRepository.countByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.WON, currentStart, currentEnd
-        )).thenReturn(4L);
-        when(revenueRepository.countByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.WON, previousStart, previousEnd
-        )).thenReturn(3L);
-        when(revenueRepository.countByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.LOST, currentStart, currentEnd
-        )).thenReturn(1L);
-        when(revenueRepository.countByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.LOST, previousStart, previousEnd
-        )).thenReturn(1L);
+        )).thenReturn(List.of(
+            revenueRecord(6L, "Prior Alpha", "400.00", RevenueStatus.WON, previousStart),
+            revenueRecord(7L, "Prior Beta", "400.00", RevenueStatus.WON, previousStart.plusDays(1)),
+            revenueRecord(8L, "Prior Gamma", "400.00", RevenueStatus.WON, previousStart.plusDays(2)),
+            revenueRecord(9L, "Prior Delta", "250.00", RevenueStatus.LOST, previousStart.plusDays(3))
+        ));
 
         DashboardSummaryResponse response = dashboardService.getSummary(USER_ID, RANGE);
 
@@ -86,6 +74,11 @@ class DashboardServiceTest {
         assertThat(netRevenue.deltaValue()).isEqualByComparingTo("400.00");
         assertThat(netRevenue.deltaPercent()).isEqualByComparingTo("33.33");
         assertThat(netRevenue.deltaDirection()).isEqualTo("UP");
+        assertThat(response.netRevenueTrend().labels()).isNotEmpty();
+        assertThat(response.netRevenueTrend().labels().get(0)).doesNotContain("-");
+        BigDecimal netRevenueTrendTotal = response.netRevenueTrend().data().stream()
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertThat(netRevenueTrendTotal).isEqualByComparingTo(response.netRevenue().currentValue());
 
         KpiMetric customers = response.customers();
         assertThat(customers.currentValue()).isEqualByComparingTo("5");
@@ -93,6 +86,8 @@ class DashboardServiceTest {
         assertThat(customers.deltaValue()).isEqualByComparingTo("1");
         assertThat(customers.deltaPercent()).isEqualByComparingTo("25.00");
         assertThat(customers.deltaDirection()).isEqualTo("UP");
+        assertThat(response.customersTrend().data().get(response.customersTrend().data().size() - 1))
+            .isEqualByComparingTo(response.customers().currentValue());
 
         // Avg deal size: 1600/4 = 400.00 current vs 1200/3 = 400.00 previous -> flat.
         KpiMetric averageDealSize = response.averageDealSize();
@@ -108,6 +103,7 @@ class DashboardServiceTest {
         assertThat(winRate.previousValue()).isEqualByComparingTo("75.00");
         assertThat(winRate.deltaValue()).isEqualByComparingTo("5.00");
         assertThat(winRate.deltaDirection()).isEqualTo("UP");
+        assertThat(response.winRateTrend().data()).contains(BigDecimal.valueOf(100).setScale(2));
     }
 
     @Test
@@ -118,32 +114,15 @@ class DashboardServiceTest {
         LocalDate previousStart = RANGE.previousStartDate(today);
         LocalDate previousEnd = currentStart;
 
-        when(revenueRepository.sumAmountByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.WON, currentStart, currentEnd
-        )).thenReturn(new BigDecimal("500.00"));
-        when(revenueRepository.sumAmountByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.WON, previousStart, previousEnd
-        )).thenReturn(null);
-
-        when(revenueRepository.countDistinctCustomersByUserIdBetweenDates(
+        when(revenueRepository.findByUserIdBetweenDates(
             USER_ID, currentStart, currentEnd
-        )).thenReturn(2L);
-        when(revenueRepository.countDistinctCustomersByUserIdBetweenDates(
+        )).thenReturn(List.of(
+            revenueRecord(1L, "New Alpha", "250.00", RevenueStatus.WON, currentStart),
+            revenueRecord(2L, "New Beta", "250.00", RevenueStatus.WON, currentStart.plusDays(1))
+        ));
+        when(revenueRepository.findByUserIdBetweenDates(
             USER_ID, previousStart, previousEnd
-        )).thenReturn(0L);
-
-        when(revenueRepository.countByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.WON, currentStart, currentEnd
-        )).thenReturn(2L);
-        when(revenueRepository.countByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.WON, previousStart, previousEnd
-        )).thenReturn(0L);
-        when(revenueRepository.countByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.LOST, currentStart, currentEnd
-        )).thenReturn(0L);
-        when(revenueRepository.countByUserIdAndStatusBetweenDates(
-            USER_ID, RevenueStatus.LOST, previousStart, previousEnd
-        )).thenReturn(0L);
+        )).thenReturn(List.of());
 
         DashboardSummaryResponse response = dashboardService.getSummary(USER_ID, RANGE);
 
@@ -161,15 +140,9 @@ class DashboardServiceTest {
 
     @Test
     void getSummaryReturnsNoneDirectionWhenBothPeriodsAreEmpty() {
-        when(revenueRepository.sumAmountByUserIdAndStatusBetweenDates(
-            eq(USER_ID), eq(RevenueStatus.WON), any(LocalDate.class), any(LocalDate.class)
-        )).thenReturn(null);
-        when(revenueRepository.countDistinctCustomersByUserIdBetweenDates(
+        when(revenueRepository.findByUserIdBetweenDates(
             eq(USER_ID), any(LocalDate.class), any(LocalDate.class)
-        )).thenReturn(0L);
-        when(revenueRepository.countByUserIdAndStatusBetweenDates(
-            eq(USER_ID), any(RevenueStatus.class), any(LocalDate.class), any(LocalDate.class)
-        )).thenReturn(0L);
+        )).thenReturn(List.of());
 
         DashboardSummaryResponse response = dashboardService.getSummary(USER_ID, RANGE);
 
@@ -181,6 +154,24 @@ class DashboardServiceTest {
         assertThat(response.averageDealSize().deltaPercent()).isNull();
         assertThat(response.winRate().deltaDirection()).isEqualTo("NONE");
         assertThat(response.winRate().deltaPercent()).isNull();
+    }
+
+    @Test
+    void getSummaryFormatsTrendLabelsForSelectedGranularity() {
+        when(revenueRepository.findByUserIdBetweenDates(
+            eq(USER_ID), any(LocalDate.class), any(LocalDate.class)
+        )).thenReturn(List.of());
+
+        DashboardSummaryResponse daily =
+            dashboardService.getSummary(USER_ID, DashboardTimeRange.LAST_30_DAYS);
+        DashboardSummaryResponse weekly =
+            dashboardService.getSummary(USER_ID, DashboardTimeRange.LAST_90_DAYS);
+        DashboardSummaryResponse monthly =
+            dashboardService.getSummary(USER_ID, DashboardTimeRange.LAST_12_MONTHS);
+
+        assertThat(daily.netRevenueTrend().labels().get(0)).doesNotContain("-");
+        assertThat(weekly.netRevenueTrend().labels().get(0)).startsWith("Week of ");
+        assertThat(monthly.netRevenueTrend().labels().get(0)).contains(" ");
     }
 
     @Test

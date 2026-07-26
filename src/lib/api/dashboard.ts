@@ -11,11 +11,20 @@ export type KpiMetric = {
   deltaDirection: KpiDeltaDirection;
 };
 
+export type KpiTrendSeries = {
+  labels: string[];
+  data: number[];
+};
+
 export type DashboardSummary = {
   netRevenue: KpiMetric;
+  netRevenueTrend: KpiTrendSeries;
   customers: KpiMetric;
+  customersTrend: KpiTrendSeries;
   averageDealSize: KpiMetric;
+  averageDealSizeTrend: KpiTrendSeries;
   winRate: KpiMetric;
+  winRateTrend: KpiTrendSeries;
 };
 
 export type ForecastActive = {

@@ -1,7 +1,9 @@
 .dataCard {
+  container-name: kpi-card;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
   height: 100%;
   min-height: 184px;
   overflow: hidden;
@@ -18,7 +20,7 @@
 }
 
 .dataCard::before {
-  background: #14b8a6;
+  background: var(--data-card-accent, #14b8a6);
   content: "";
   height: 3px;
   left: 0;
@@ -39,8 +41,9 @@
   padding-top: 10px;
 }
 
-.compact .trendPill {
-  padding: 5px 7px;
+.compact .sparkline {
+  height: 54px;
+  width: clamp(124px, 42%, 144px);
 }
 
 .cardHeader {
@@ -50,10 +53,6 @@
   min-width: 0;
   position: relative;
   z-index: 1;
-}
-
-.tooltipAnchor {
-  display: inline-flex;
 }
 
 .label {
@@ -68,9 +67,11 @@
 }
 
 .metricBlock {
-  align-items: flex-end;
+  align-items: center;
+  container-name: kpi-metric;
+  container-type: inline-size;
   display: flex;
-  gap: 12px;
+  gap: 8px;
   justify-content: space-between;
   min-width: 0;
   position: relative;
@@ -78,7 +79,7 @@
 }
 
 .value {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   font-size: clamp(2rem, 3.35vw, 2.62rem);
   font-weight: 850;
   font-variation-settings: "wght" 850;
@@ -86,21 +87,140 @@
   line-height: 0.9;
   margin: 0;
   min-width: 0;
+  white-space: nowrap;
 }
 
-.trendPill {
-  align-items: center;
-  background: color-mix(in srgb, currentColor 11%, transparent);
-  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
-  border-radius: 8px;
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: 0.78rem;
-  font-weight: 720;
-  gap: 4px;
-  line-height: 1;
-  padding: 6px 8px;
-  white-space: nowrap;
+.sparkline {
+  animation: sparklineFadeIn 520ms ease 90ms both;
+  flex: 1 1 156px;
+  height: 60px;
+  max-width: 156px;
+  min-width: 96px;
+  position: relative;
+  width: clamp(96px, 44%, 156px);
+}
+
+.chartSurface {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.areaSparkline .chartSurface {
+  height: 92px;
+}
+
+.barSparkline .chartSurface {
+  height: 96px;
+  left: 10px;
+}
+
+.compact .barSparkline .chartSurface {
+  height: 82px;
+}
+
+@container kpi-metric (max-width: 300px) {
+  .value {
+    font-size: clamp(1.92rem, 14cqi, 2.4rem);
+  }
+
+  .sparkline {
+    flex-basis: clamp(112px, 50cqi, 142px);
+    max-width: 142px;
+    min-width: 84px;
+    width: clamp(112px, 50cqi, 142px);
+  }
+
+  .barSparkline .chartSurface {
+    left: 6px;
+  }
+}
+
+@container kpi-metric (max-width: 260px) {
+  .value {
+    font-size: clamp(1.82rem, 17cqi, 2.24rem);
+  }
+
+  .sparkline {
+    flex-basis: clamp(84px, 42cqi, 124px);
+    height: 56px;
+    min-width: 84px;
+    width: clamp(84px, 42cqi, 124px);
+  }
+
+  .areaSparkline .chartSurface {
+    height: 82px;
+  }
+
+  .barSparkline .chartSurface {
+    height: 84px;
+    left: 6px;
+  }
+}
+
+@container kpi-metric (max-width: 210px) {
+  .value {
+    font-size: clamp(1.62rem, 18cqi, 1.94rem);
+  }
+
+  .sparkline {
+    flex-basis: clamp(68px, 40cqi, 92px);
+    height: 50px;
+    min-width: 68px;
+    width: clamp(68px, 40cqi, 92px);
+  }
+
+  .areaSparkline .chartSurface {
+    height: 70px;
+  }
+
+  .barSparkline .chartSurface {
+    height: 72px;
+    left: 3px;
+  }
+}
+
+@container kpi-metric (max-width: 170px) {
+  .sparkline {
+    flex: 0 0 52px;
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .areaSparkline .chartSurface {
+    height: 72px;
+  }
+
+  .barSparkline .chartSurface {
+    height: 74px;
+  }
+}
+
+@container kpi-card (max-width: 260px) {
+  .metricBlock {
+    gap: 6px;
+  }
+}
+
+@container kpi-card (max-width: 300px) {
+  .metricBlock {
+    gap: 6px;
+  }
+}
+
+@container kpi-card (max-width: 210px) {
+  .metricBlock {
+    gap: 4px;
+  }
+}
+
+@container kpi-card (max-width: 170px) {
+  .metricBlock {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 .contextRow {
@@ -134,12 +254,84 @@
 
 @media (max-width: 520px) {
   .dataCard {
-    min-height: 168px;
-    padding: 18px;
+    gap: 10px;
+    height: auto;
+    min-height: 0;
+    padding: 14px 16px 16px;
   }
 
   .metricBlock {
     align-items: flex-start;
     flex-direction: column;
+    gap: 8px;
+  }
+
+  .sparkline {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  .areaSparkline .chartSurface {
+    height: 78px;
+  }
+
+  .contextRow {
+    gap: 4px;
+    margin-top: 0;
+    padding-top: 8px;
+  }
+
+  .winRateCard .areaSparkline {
+    --data-chart-height: 42px;
+    --data-chart-min-height: 42px;
+
+    height: 42px;
+    margin-top: 2px;
+  }
+
+  .winRateCard .areaSparkline .chartSurface {
+    height: 42px;
+  }
+}
+
+@media (max-width: 423px) {
+  .barSparkline {
+    --data-chart-height: 58px;
+    --data-chart-min-height: 58px;
+
+    height: 46px;
+  }
+
+  .barSparkline .chartSurface {
+    height: 58px;
+    left: 0;
+  }
+}
+
+@media (max-width: 340px) {
+  .netRevenueCard .areaSparkline {
+    --data-chart-height: 48px;
+    --data-chart-min-height: 48px;
+
+    height: 48px;
+    margin-top: 6px;
+  }
+
+  .netRevenueCard .areaSparkline .chartSurface {
+    height: 48px;
+  }
+}
+
+@keyframes sparklineFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

@@ -104,6 +104,15 @@ const rangeLabels: Record<DefaultTimeRange, string> = {
   LAST_12_MONTHS: "Last 12 Months",
 };
 
+const pipelineAccentClassNames: Record<
+  string,
+  "amberAccent" | "cyanAccent" | "emeraldAccent"
+> = {
+  qualifiedPipeline: "cyanAccent",
+  salesCycle: "emeraldAccent",
+  expansionRevenue: "amberAccent",
+};
+
 const TransactionsPerDay = ({
   compactMode = false,
   pipelineMetrics,
@@ -215,7 +224,10 @@ const TransactionsPerDay = ({
             <aside className={scss.insightRail} aria-label="Revenue trend highlights">
               <h3 className={scss.railTitle}>Pipeline metrics</h3>
               {insightMetrics.map((metric) => (
-                <div className={scss.insightItem} key={metric.key}>
+                <div
+                  className={`${scss.insightItem} ${getPipelineAccentClassName(metric.key)}`}
+                  key={metric.key}
+                >
                   <div>
                     <h4 className={scss.insightLabel}>{metric.label}</h4>
                     <p className={scss.insightContext}>
@@ -239,6 +251,12 @@ const TransactionsPerDay = ({
       </Grid>
     </Grid>
   );
+};
+
+const getPipelineAccentClassName = (metricKey: string) => {
+  const accentClassName = pipelineAccentClassNames[metricKey] ?? "cyanAccent";
+
+  return scss[accentClassName];
 };
 
 const getInsightChangeTone = (

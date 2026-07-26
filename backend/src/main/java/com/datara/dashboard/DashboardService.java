@@ -7,20 +7,25 @@ import com.datara.dashboard.dto.DashboardPanelsResponse;
 import com.datara.dashboard.dto.DashboardSummaryResponse;
 import com.datara.dashboard.dto.ForecastActiveResponse;
 import com.datara.dashboard.dto.KpiMetric;
+import com.datara.dashboard.dto.KpiTrendSeries;
 import com.datara.dashboard.dto.PipelineMetricResponse;
 import com.datara.revenue.RevenueRecord;
 import com.datara.revenue.RevenueRepository;
 import com.datara.revenue.RevenueStatus;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +61,10 @@ public class DashboardService {
     private static final BigDecimal ONE_THOUSAND = BigDecimal.valueOf(1_000);
     private static final BigDecimal ONE_MILLION = BigDecimal.valueOf(1_000_000);
     private static final BigDecimal DEFAULT_SALES_CYCLE_DAYS = BigDecimal.valueOf(18);
+    private static final DateTimeFormatter DAY_LABEL_FORMATTER =
+        DateTimeFormatter.ofPattern("MMM d", Locale.US);
+    private static final DateTimeFormatter MONTH_LABEL_FORMATTER =
+        DateTimeFormatter.ofPattern("MMM yyyy", Locale.US);
 
     private final DashboardForecastRepository dashboardForecastRepository;
     private final RevenueRepository revenueRepository;
@@ -67,12 +76,20 @@ public class DashboardService {
         LocalDate currentEnd = range.endDateExclusive(today);
         LocalDate previousStart = range.previousStartDate(today);
         LocalDate previousEnd = currentStart;
+        List<RevenueRecord> currentRecords =
+            revenueRepository.findByUserIdBetweenDates(userId, currentStart, currentEnd);
+        List<RevenueRecord> previousRecords =
+            revenueRepository.findByUserIdBetweenDates(userId, previousStart, previousEnd);
 
         return new DashboardSummaryResponse(
-            netRevenueMetric(userId, currentStart, currentEnd, previousStart, previousEnd),
-            customersMetric(userId, currentStart, currentEnd, previousStart, previousEnd),
-            averageDealSizeMetric(userId, currentStart, currentEnd, previousStart, previousEnd),
-            winRateMetric(userId, currentStart, currentEnd, previousStart, previousEnd)
+            netRevenueMetric(currentRecords, previousRecords),
+            netRevenueTrend(currentRecords, range, currentStart, currentEnd),
+            customersMetric(currentRecords, previousRecords),
+            customersTrend(currentRecords, range, currentStart, currentEnd),
+            averageDealSizeMetric(currentRecords, previousRecords),
+            averageDealSizeTrend(currentRecords, range, currentStart, currentEnd),
+            winRateMetric(currentRecords, previousRecords),
+            winRateTrend(currentRecords, range, currentStart, currentEnd)
         );
     }
 
@@ -209,64 +226,44 @@ public class DashboardService {
 
     /** Net Revenue: won revenue in the selected range vs the previous equal range. */
     private KpiMetric netRevenueMetric(
-        Long userId,
-        LocalDate currentStart,
-        LocalDate currentEnd,
-        LocalDate previousStart,
-        LocalDate previousEnd
+        List<RevenueRecord> currentRecords,
+        List<RevenueRecord> previousRecords
     ) {
-        BigDecimal current = wonRevenueForPeriod(userId, currentStart, currentEnd);
-        BigDecimal previous = wonRevenueForPeriod(userId, previousStart, previousEnd);
+        BigDecimal current = wonRevenueForRecords(currentRecords);
+        BigDecimal previous = wonRevenueForRecords(previousRecords);
 
         return buildMetric(current, previous);
     }
 
     /** Customers: distinct customers in the selected range vs the previous equal range. */
     private KpiMetric customersMetric(
-        Long userId,
-        LocalDate currentStart,
-        LocalDate currentEnd,
-        LocalDate previousStart,
-        LocalDate previousEnd
+        List<RevenueRecord> currentRecords,
+        List<RevenueRecord> previousRecords
     ) {
-        BigDecimal current = BigDecimal.valueOf(
-            revenueRepository.countDistinctCustomersByUserIdBetweenDates(
-                userId, currentStart, currentEnd
-            )
-        );
-        BigDecimal previous = BigDecimal.valueOf(
-            revenueRepository.countDistinctCustomersByUserIdBetweenDates(
-                userId, previousStart, previousEnd
-            )
-        );
+        BigDecimal current = BigDecimal.valueOf(distinctCustomerCount(currentRecords));
+        BigDecimal previous = BigDecimal.valueOf(distinctCustomerCount(previousRecords));
 
         return buildMetric(current, previous);
     }
 
     /** Avg. Deal Size: average WON deal size in the selected range vs previous range. */
     private KpiMetric averageDealSizeMetric(
-        Long userId,
-        LocalDate currentStart,
-        LocalDate currentEnd,
-        LocalDate previousStart,
-        LocalDate previousEnd
+        List<RevenueRecord> currentRecords,
+        List<RevenueRecord> previousRecords
     ) {
-        BigDecimal current = averageWonDealSize(userId, currentStart, currentEnd);
-        BigDecimal previous = averageWonDealSize(userId, previousStart, previousEnd);
+        BigDecimal current = averageWonDealSize(currentRecords);
+        BigDecimal previous = averageWonDealSize(previousRecords);
 
         return buildMetric(current, previous);
     }
 
     /** Win Rate: WON deals / (WON + LOST) in the selected range vs previous range. */
     private KpiMetric winRateMetric(
-        Long userId,
-        LocalDate currentStart,
-        LocalDate currentEnd,
-        LocalDate previousStart,
-        LocalDate previousEnd
+        List<RevenueRecord> currentRecords,
+        List<RevenueRecord> previousRecords
     ) {
-        BigDecimal current = winRateForPeriod(userId, currentStart, currentEnd);
-        BigDecimal previous = winRateForPeriod(userId, previousStart, previousEnd);
+        BigDecimal current = winRateForRecords(currentRecords);
+        BigDecimal previous = winRateForRecords(previousRecords);
 
         return buildMetric(current, previous);
     }
@@ -308,6 +305,206 @@ public class DashboardService {
                 .divide(BigDecimal.valueOf(closedDeals), PERCENT_SCALE, RoundingMode.HALF_UP);
 
         return rate.setScale(PERCENT_SCALE, RoundingMode.HALF_UP);
+    }
+
+    private KpiTrendSeries netRevenueTrend(
+        List<RevenueRecord> records,
+        DashboardTimeRange range,
+        LocalDate startDate,
+        LocalDate endDate
+    ) {
+        List<TimeBucket> buckets = timeBuckets(range, startDate, endDate);
+        List<BigDecimal> data = buckets.stream()
+            .map(bucket -> wonRevenueForRecords(recordsInBucket(records, bucket)))
+            .toList();
+
+        return new KpiTrendSeries(bucketLabels(buckets), data);
+    }
+
+    private KpiTrendSeries customersTrend(
+        List<RevenueRecord> records,
+        DashboardTimeRange range,
+        LocalDate startDate,
+        LocalDate endDate
+    ) {
+        List<TimeBucket> buckets = timeBuckets(range, startDate, endDate);
+        List<BigDecimal> data = buckets.stream()
+            .map(bucket -> BigDecimal.valueOf(
+                records.stream()
+                    .filter(record -> !record.getDate().isBefore(startDate))
+                    .filter(record -> record.getDate().isBefore(bucket.endDate()))
+                    .map(RevenueRecord::getCustomerName)
+                    .distinct()
+                    .count()
+            ))
+            .toList();
+
+        return new KpiTrendSeries(bucketLabels(buckets), data);
+    }
+
+    private KpiTrendSeries averageDealSizeTrend(
+        List<RevenueRecord> records,
+        DashboardTimeRange range,
+        LocalDate startDate,
+        LocalDate endDate
+    ) {
+        List<TimeBucket> buckets = timeBuckets(range, startDate, endDate);
+        List<BigDecimal> data = buckets.stream()
+            .map(bucket -> averageWonDealSize(recordsInBucket(records, bucket)))
+            .toList();
+
+        return new KpiTrendSeries(bucketLabels(buckets), data);
+    }
+
+    private KpiTrendSeries winRateTrend(
+        List<RevenueRecord> records,
+        DashboardTimeRange range,
+        LocalDate startDate,
+        LocalDate endDate
+    ) {
+        List<TimeBucket> buckets = timeBuckets(range, startDate, endDate);
+        List<BigDecimal> data = buckets.stream()
+            .map(bucket -> winRateForRecords(recordsInBucket(records, bucket)))
+            .toList();
+
+        return new KpiTrendSeries(bucketLabels(buckets), data);
+    }
+
+    private BigDecimal wonRevenueForRecords(List<RevenueRecord> records) {
+        return records.stream()
+            .filter(record -> record.getStatus() == RevenueStatus.WON)
+            .map(record -> zeroIfNull(record.getAmount()))
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+    }
+
+    private long distinctCustomerCount(List<RevenueRecord> records) {
+        return records.stream()
+            .map(RevenueRecord::getCustomerName)
+            .distinct()
+            .count();
+    }
+
+    private BigDecimal averageWonDealSize(List<RevenueRecord> records) {
+        long wonDeals = statusCount(records, RevenueStatus.WON);
+        BigDecimal wonRevenue = wonRevenueForRecords(records);
+
+        BigDecimal average = wonDeals == 0
+            ? BigDecimal.ZERO
+            : wonRevenue.divide(BigDecimal.valueOf(wonDeals), MONEY_SCALE, RoundingMode.HALF_UP);
+
+        return average.setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal winRateForRecords(List<RevenueRecord> records) {
+        long wonDeals = statusCount(records, RevenueStatus.WON);
+        long lostDeals = statusCount(records, RevenueStatus.LOST);
+        long closedDeals = wonDeals + lostDeals;
+
+        BigDecimal rate = closedDeals == 0
+            ? BigDecimal.ZERO
+            : BigDecimal.valueOf(wonDeals)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(closedDeals), PERCENT_SCALE, RoundingMode.HALF_UP);
+
+        return rate.setScale(PERCENT_SCALE, RoundingMode.HALF_UP);
+    }
+
+    private long statusCount(List<RevenueRecord> records, RevenueStatus status) {
+        return records.stream()
+            .filter(record -> record.getStatus() == status)
+            .count();
+    }
+
+    private List<RevenueRecord> recordsInBucket(List<RevenueRecord> records, TimeBucket bucket) {
+        return records.stream()
+            .filter(record -> !record.getDate().isBefore(bucket.startDate()))
+            .filter(record -> record.getDate().isBefore(bucket.endDate()))
+            .toList();
+    }
+
+    private List<String> bucketLabels(List<TimeBucket> buckets) {
+        return buckets.stream()
+            .map(TimeBucket::label)
+            .toList();
+    }
+
+    private List<TimeBucket> timeBuckets(
+        DashboardTimeRange range,
+        LocalDate startDate,
+        LocalDate endDate
+    ) {
+        return switch (range) {
+            case LAST_30_DAYS -> dailyBuckets(startDate, endDate);
+            case LAST_90_DAYS -> weeklyBuckets(startDate, endDate);
+            case LAST_12_MONTHS -> monthlyBuckets(startDate, endDate);
+        };
+    }
+
+    private List<TimeBucket> dailyBuckets(LocalDate startDate, LocalDate endDate) {
+        List<TimeBucket> buckets = new ArrayList<>();
+
+        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+            buckets.add(new TimeBucket(
+                DAY_LABEL_FORMATTER.format(date),
+                date,
+                date.plusDays(1)
+            ));
+        }
+
+        return buckets;
+    }
+
+    private List<TimeBucket> weeklyBuckets(LocalDate startDate, LocalDate endDate) {
+        List<TimeBucket> buckets = new ArrayList<>();
+
+        for (
+            LocalDate weekStart = weekStart(startDate);
+            weekStart.isBefore(endDate);
+            weekStart = weekStart.plusWeeks(1)
+        ) {
+            LocalDate bucketStart = weekStart.isBefore(startDate) ? startDate : weekStart;
+            LocalDate bucketEnd = weekStart.plusWeeks(1).isAfter(endDate)
+                ? endDate
+                : weekStart.plusWeeks(1);
+
+            buckets.add(new TimeBucket(
+                "Week of " + DAY_LABEL_FORMATTER.format(bucketStart),
+                bucketStart,
+                bucketEnd
+            ));
+        }
+
+        return buckets;
+    }
+
+    private List<TimeBucket> monthlyBuckets(LocalDate startDate, LocalDate endDate) {
+        List<TimeBucket> buckets = new ArrayList<>();
+        YearMonth firstMonth = YearMonth.from(startDate);
+        YearMonth lastMonth = YearMonth.from(endDate.minusDays(1));
+
+        for (
+            YearMonth month = firstMonth;
+            !month.isAfter(lastMonth);
+            month = month.plusMonths(1)
+        ) {
+            LocalDate monthStart = month.atDay(1);
+            LocalDate nextMonthStart = month.plusMonths(1).atDay(1);
+            LocalDate bucketStart = monthStart.isBefore(startDate) ? startDate : monthStart;
+            LocalDate bucketEnd = nextMonthStart.isAfter(endDate) ? endDate : nextMonthStart;
+
+            buckets.add(new TimeBucket(
+                MONTH_LABEL_FORMATTER.format(month),
+                bucketStart,
+                bucketEnd
+            ));
+        }
+
+        return buckets;
+    }
+
+    private LocalDate weekStart(LocalDate date) {
+        return date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
     /**
@@ -569,5 +766,8 @@ public class DashboardService {
 
     private BigDecimal zeroIfNull(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
+    }
+
+    private record TimeBucket(String label, LocalDate startDate, LocalDate endDate) {
     }
 }

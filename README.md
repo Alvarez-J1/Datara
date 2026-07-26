@@ -1,7 +1,8 @@
 # Datara — Sales Analytics Dashboard
 Datara is a full-stack sales analytics dashboard that helps teams monitor revenue, customer performance, and business insights through interactive data visualizations. It features secure authentication, customizable dashboard settings, responsive data tables, and dynamic KPI reporting, powered by a Java Spring Boot backend with PostgreSQL and a modern Next.js frontend.
 
-<img width="1518" height="727" alt="image" src="https://github.com/user-attachments/assets/cb3b25bc-8d57-4fc3-a0cb-4c4526162ee0" />
+<img width="1136" height="676" alt="image" src="https://github.com/user-attachments/assets/96a48bb2-a2b3-4bda-90d0-46a689b3ce0f" />
+
 
 
 ## Live Demo

@@ -277,6 +277,18 @@
     height: 78px;
   }
 
+  .barSparkline {
+    --data-chart-height: 58px;
+    --data-chart-min-height: 58px;
+
+    height: 58px;
+  }
+
+  .barSparkline .chartSurface {
+    height: 58px;
+    left: 0;
+  }
+
   .contextRow {
     gap: 4px;
     margin-top: 0;
@@ -298,14 +310,14 @@
 
 @media (max-width: 423px) {
   .barSparkline {
-    --data-chart-height: 58px;
-    --data-chart-min-height: 58px;
+    --data-chart-height: 48px;
+    --data-chart-min-height: 48px;
 
-    height: 46px;
+    height: 48px;
   }
 
   .barSparkline .chartSurface {
-    height: 58px;
+    height: 48px;
     left: 0;
   }
 }

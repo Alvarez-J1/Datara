@@ -302,6 +302,7 @@ export default function Settings() {
             <Chip
               className={scss.savedChip}
               label="Changes saved"
+              role="status"
               size="small"
               variant="outlined"
             />

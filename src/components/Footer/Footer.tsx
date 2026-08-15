@@ -52,17 +52,10 @@ const Footer = () => {
             <Link href="/dashboard/settings" prefetch={false}>Settings</Link>
           </li>
           <li>
-            <Link
-          href="#"
-        onClick={(e) => e.preventDefault()}>Terms & Conditions</Link>
+            <span>Terms & Conditions</span>
           </li>
           <li>
-           <Link
-          href="#"
-        onClick={(e) => e.preventDefault()}
-        >
-  Accessibility statement
-</Link>
+            <span>Accessibility statement</span>
           </li>
           <li>
             <Button

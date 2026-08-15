@@ -98,7 +98,11 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     const cachedThemePreference = readCachedThemePreference();
 
     if (cachedThemePreference !== "SYSTEM") {
-      setThemePreferenceState(cachedThemePreference);
+      const timeout = window.setTimeout(() => {
+        setThemePreferenceState(cachedThemePreference);
+      }, 0);
+
+      return () => window.clearTimeout(timeout);
     }
   }, []);
 

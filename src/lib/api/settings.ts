@@ -113,16 +113,29 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (!canUseBackendSettings) {
-      setError("");
-      setIsLoading(false);
-      setSettings(null);
-      return;
-    }
-
     let isMounted = true;
-    setError("");
-    setIsLoading(true);
+    const loadingStateTimeout = window.setTimeout(() => {
+      if (!isMounted) {
+        return;
+      }
+
+      setError("");
+
+      if (!canUseBackendSettings) {
+        setIsLoading(false);
+        setSettings(null);
+        return;
+      }
+
+      setIsLoading(true);
+    }, 0);
+
+    if (!canUseBackendSettings) {
+      return () => {
+        isMounted = false;
+        window.clearTimeout(loadingStateTimeout);
+      };
+    }
 
     getUserSettings()
       .then((loadedSettings) => {
@@ -144,6 +157,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       isMounted = false;
+      window.clearTimeout(loadingStateTimeout);
     };
   }, [applySettings, canUseBackendSettings]);
 

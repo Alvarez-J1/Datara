@@ -23,6 +23,11 @@ const forecastRangeLabels: Record<DefaultTimeRange, string> = {
   LAST_12_MONTHS: "Last 12 Months",
 };
 
+type DashboardPanelsState = {
+  panels: DashboardPanels;
+  range: DefaultTimeRange;
+};
+
 export default function Home() {
   const isDemoMode = useDemoMode();
   const hasAuthToken = useHasAuthToken();
@@ -30,8 +35,10 @@ export default function Home() {
   const compactMode = settings?.compactMode ?? false;
   const timeRange = settings?.defaultTimeRange ?? "LAST_12_MONTHS";
   const canLoadDashboardPanels = isDemoMode || hasAuthToken;
-  const [dashboardPanels, setDashboardPanels] =
-    useState<DashboardPanels | null>(null);
+  const [dashboardPanelsState, setDashboardPanelsState] =
+    useState<DashboardPanelsState | null>(null);
+  const dashboardPanels =
+    dashboardPanelsState?.range === timeRange ? dashboardPanelsState.panels : null;
 
   useEffect(() => {
     if (!canLoadDashboardPanels) {
@@ -39,12 +46,11 @@ export default function Home() {
     }
 
     let isMounted = true;
-    setDashboardPanels(null);
 
     getDashboardPanels(timeRange)
       .then((panels) => {
         if (isMounted && isDashboardPanelsUsable(panels)) {
-          setDashboardPanels(panels);
+          setDashboardPanelsState({ panels, range: timeRange });
         }
       })
       .catch((error) => {

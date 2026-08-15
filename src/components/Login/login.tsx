@@ -253,7 +253,7 @@ const Login = () => {
               ))}
             </div>
 
-            <div className={scss.chartPreview}>
+            <div className={scss.chartPreview} aria-hidden="true">
               <div className={scss.chartLine} />
               {[42, 54, 48, 66, 74, 86, 96].map((height, index) => (
                 <span

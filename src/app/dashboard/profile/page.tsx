@@ -141,6 +141,7 @@ export default function Profile() {
           <Chip
             className={scss.savedChip}
             label="Profile updated"
+            role="status"
             size="small"
             variant="outlined"
           />

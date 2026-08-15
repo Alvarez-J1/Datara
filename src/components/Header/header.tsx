@@ -48,6 +48,8 @@ const Header = () => {
   const displayEmail =
     (isDemoMode ? "Sample business analytics" : authUser?.email) ??
     "Sample business analytics";
+  const userMenuButtonId = "header-user-menu-button";
+  const userMenuId = "header-user-menu";
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
@@ -184,7 +186,11 @@ const Header = () => {
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open profile settings">
                 <Button
+                  aria-controls={anchorElUser ? userMenuId : undefined}
+                  aria-expanded={anchorElUser ? "true" : undefined}
+                  aria-haspopup="menu"
                   aria-label="Open profile menu"
+                  id={userMenuButtonId}
                   onClick={handleOpenUserMenu}
                   sx={{
                     border: "1px solid",
@@ -226,6 +232,7 @@ const Header = () => {
 
               <Menu
                 anchorEl={anchorElUser}
+                id={userMenuId}
                 onClose={handleCloseUserMenu}
                 open={Boolean(anchorElUser)}
                 slotProps={{

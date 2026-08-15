@@ -371,9 +371,10 @@ const Data = () => {
               size="small"
               slotProps={{
                 input: {
+                  "aria-label": "Search revenue records",
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchRoundedIcon fontSize="small" />
+                      <SearchRoundedIcon aria-hidden="true" fontSize="small" />
                     </InputAdornment>
                   ),
                 },

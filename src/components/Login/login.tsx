@@ -403,7 +403,11 @@ const Login = () => {
                     value={password}
                   />
 
-                  {formError && <p className={scss.formError}>{formError}</p>}
+                  {formError && (
+                    <p className={scss.formError} role="alert">
+                      {formError}
+                    </p>
+                  )}
 
                   <Button
                     className={scss.primaryCta}

@@ -422,6 +422,7 @@ export default function Settings() {
                 onChange={handleFieldChange}
                 select
                 size="small"
+                slotProps={{ input: { "aria-label": "Default time range" } }}
                 sx={fieldStyles}
                 value={formState.defaultTimeRange}
               >
@@ -442,6 +443,7 @@ export default function Settings() {
                 onChange={handleFieldChange}
                 select
                 size="small"
+                slotProps={{ input: { "aria-label": "Table page size" } }}
                 sx={fieldStyles}
                 value={formState.tablePageSize}
               >
@@ -527,6 +529,7 @@ export default function Settings() {
                 onChange={handleFieldChange}
                 select
                 size="small"
+                slotProps={{ input: { "aria-label": "Theme" } }}
                 sx={fieldStyles}
                 value={formState.theme}
               >

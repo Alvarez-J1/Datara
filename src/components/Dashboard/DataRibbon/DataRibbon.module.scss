@@ -71,3 +71,13 @@
     transform: translateY(0);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .dataRibbon {
+    animation: none;
+  }
+
+  .averageDealSizeTooltip {
+    transition: none;
+  }
+}

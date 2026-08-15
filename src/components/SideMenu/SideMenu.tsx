@@ -94,7 +94,12 @@ export default function SideMenu() {
           <Typography className={scss.workspaceLabel}>Workspace</Typography>
         )}
         <Tooltip title={open ? "Collapse navigation" : "Expand navigation"}>
-          <IconButton aria-label="Toggle navigation" onClick={handleDrawerToggle} size="small">
+          <IconButton
+            aria-expanded={open}
+            aria-label={open ? "Collapse navigation" : "Expand navigation"}
+            onClick={handleDrawerToggle}
+            size="small"
+          >
             {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
         </Tooltip>

@@ -250,19 +250,17 @@ const Header = () => {
                   },
                 }}
               >
-                <MenuItem onClick={handleCloseUserMenu}>
-                  <Typography
-                    component={Link}
-                    href="/dashboard/profile"
-                    prefetch={false}
-                    sx={{
-                      color: "text.primary",
-                      textDecoration: "none",
-                      width: "100%",
-                    }}
-                  >
-                    Profile
-                  </Typography>
+                <MenuItem
+                  component={Link}
+                  href="/dashboard/profile"
+                  onClick={handleCloseUserMenu}
+                  prefetch={false}
+                  sx={{
+                    color: "text.primary",
+                    textDecoration: "none",
+                  }}
+                >
+                  Profile
                 </MenuItem>
                 <MenuItem onClick={isDemoMode ? handleExitDemo : handleCredentialsLogout}>
                   <Typography>{isDemoMode ? "Exit demo" : "Logout"}</Typography>

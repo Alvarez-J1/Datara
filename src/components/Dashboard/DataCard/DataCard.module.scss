@@ -347,3 +347,15 @@
     transform: translateY(0);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .dataCard,
+  .sparkline {
+    animation: none;
+    transition: none;
+  }
+
+  .dataCard:hover {
+    transform: none;
+  }
+}

@@ -561,3 +561,23 @@
     transform: translateY(0);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .brandColumn,
+  .cardColumn,
+  .demoSlowNotice {
+    animation: none;
+  }
+
+  .primaryCta:global(.MuiButton-root),
+  .demoCta:global(.MuiButton-root),
+  .demoCta:global(.MuiButton-root) :global(.MuiButton-endIcon) {
+    transition: none;
+  }
+
+  .primaryCta:global(.MuiButton-root):hover,
+  .demoCta:global(.MuiButton-root):hover,
+  .demoCta:global(.MuiButton-root):hover :global(.MuiButton-endIcon) {
+    transform: none;
+  }
+}

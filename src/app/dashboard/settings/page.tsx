@@ -199,6 +199,8 @@ export default function Settings() {
   const defaultTimeRangeLabelId = "settings-default-time-range-label";
   const tablePageSizeDescriptionId = "settings-table-page-size-description";
   const tablePageSizeLabelId = "settings-table-page-size-label";
+  const themeDescriptionId = "settings-theme-description";
+  const themeLabelId = "settings-theme-label";
 
   const handleToggleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = event.target;
@@ -559,7 +561,14 @@ export default function Settings() {
           </div>
 
           <div className={scss.settingList}>
-            <FieldRow description="Choose how Datara looks on this device." label="Theme">
+            <FieldRow
+              description={
+                <span id={themeDescriptionId}>
+                  Choose how Datara looks on this device.
+                </span>
+              }
+              label={<span id={themeLabelId}>Theme</span>}
+            >
               <TextField
                 className={scss.settingSelect}
                 disabled={controlsDisabled}
@@ -567,7 +576,12 @@ export default function Settings() {
                 onChange={handleFieldChange}
                 select
                 size="small"
-                slotProps={{ input: { "aria-label": "Theme" } }}
+                slotProps={{
+                  input: {
+                    "aria-describedby": themeDescriptionId,
+                    "aria-labelledby": themeLabelId,
+                  },
+                }}
                 sx={fieldStyles}
                 value={formState.theme}
               >

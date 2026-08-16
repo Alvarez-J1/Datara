@@ -383,6 +383,7 @@ const Data = () => {
             />
 
             <Button
+              aria-label="Export revenue records"
               className={scss.toolbarButton}
               onClick={handleExport}
               startIcon={<FileDownloadOutlinedIcon aria-hidden="true" />}

@@ -237,6 +237,7 @@ const TransactionsPerDay = ({
                   <div className={scss.insightNumbers}>
                     <p className={scss.insightValue}>{metric.value}</p>
                     <span
+                      aria-label={`${metric.label} change ${metric.change}`}
                       className={`${scss.insightChange} ${scss[getInsightChangeTone(metric.change)]}`}
                     >
                       <InsightChangeIcon change={metric.change} />

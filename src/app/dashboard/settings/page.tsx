@@ -197,6 +197,8 @@ export default function Settings() {
   const controlsDisabled = !isEditable || isSaving;
   const defaultTimeRangeDescriptionId = "settings-default-time-range-description";
   const defaultTimeRangeLabelId = "settings-default-time-range-label";
+  const tablePageSizeDescriptionId = "settings-table-page-size-description";
+  const tablePageSizeLabelId = "settings-table-page-size-label";
 
   const handleToggleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = event.target;
@@ -460,8 +462,12 @@ export default function Settings() {
             </FieldRow>
 
             <FieldRow
-              description="Number of rows shown per page in the Revenue Data table."
-              label="Table page size"
+              description={
+                <span id={tablePageSizeDescriptionId}>
+                  Number of rows shown per page in the Revenue Data table.
+                </span>
+              }
+              label={<span id={tablePageSizeLabelId}>Table page size</span>}
             >
               <TextField
                 className={scss.settingSelect}
@@ -470,7 +476,12 @@ export default function Settings() {
                 onChange={handleFieldChange}
                 select
                 size="small"
-                slotProps={{ input: { "aria-label": "Table page size" } }}
+                slotProps={{
+                  input: {
+                    "aria-describedby": tablePageSizeDescriptionId,
+                    "aria-labelledby": tablePageSizeLabelId,
+                  },
+                }}
                 sx={fieldStyles}
                 value={formState.tablePageSize}
               >

@@ -38,35 +38,37 @@ const Footer = () => {
           width: "100%",
         }}
       >
-        <ul className={scss.footerList}>
-          <li>
-            <Link href="/dashboard" prefetch={false}>Home</Link>
-          </li>
-          <li>
-            <Link href="/dashboard/data" prefetch={false}>Data</Link>
-          </li>
-          <li>
-            <Link href="/dashboard/profile" prefetch={false}>Profile</Link>
-          </li>
-          <li>
-            <Link href="/dashboard/settings" prefetch={false}>Settings</Link>
-          </li>
-          <li>
-            <span>Terms & Conditions</span>
-          </li>
-          <li>
-            <span>Accessibility statement</span>
-          </li>
-          <li>
-            <Button
-              variant="text"
-              color={hasWorkspaceAccess ? "error" : "success"}
-              onClick={handleAuthAction}
-            >
-              {hasWorkspaceAccess ? "Sign Out" : "Sign In"}
-            </Button>
-          </li>
-        </ul>
+        <nav aria-label="Footer navigation">
+          <ul className={scss.footerList}>
+            <li>
+              <Link href="/dashboard" prefetch={false}>Home</Link>
+            </li>
+            <li>
+              <Link href="/dashboard/data" prefetch={false}>Data</Link>
+            </li>
+            <li>
+              <Link href="/dashboard/profile" prefetch={false}>Profile</Link>
+            </li>
+            <li>
+              <Link href="/dashboard/settings" prefetch={false}>Settings</Link>
+            </li>
+            <li>
+              <span>Terms & Conditions</span>
+            </li>
+            <li>
+              <span>Accessibility statement</span>
+            </li>
+            <li>
+              <Button
+                variant="text"
+                color={hasWorkspaceAccess ? "error" : "success"}
+                onClick={handleAuthAction}
+              >
+                {hasWorkspaceAccess ? "Sign Out" : "Sign In"}
+              </Button>
+            </li>
+          </ul>
+        </nav>
       </Paper>
     </footer>
   );

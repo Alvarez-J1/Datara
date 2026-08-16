@@ -282,7 +282,7 @@ const Login = () => {
                 <Button
                   className={scss.demoCta}
                   disabled={isLoading}
-                  endIcon={<ArrowForwardIcon />}
+                  endIcon={<ArrowForwardIcon aria-hidden="true" />}
                   onClick={handleDemoAccess}
                   variant="contained"
                 >
@@ -327,7 +327,7 @@ const Login = () => {
               <div className={scss.sessionActions}>
                 <Button
                   className={scss.primaryCta}
-                  endIcon={<ArrowForwardIcon />}
+                  endIcon={<ArrowForwardIcon aria-hidden="true" />}
                   onClick={() => {
                     // Hard navigation - see handleCredentialsSubmit for why
                     // a Next <Link>/router.push to /dashboard can silently

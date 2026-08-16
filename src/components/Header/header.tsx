@@ -162,6 +162,7 @@ const Header = () => {
             }}
           >
             <LightModeIcon
+              aria-hidden="true"
               fontSize="small"
               sx={{ color: isDark ? "text.disabled" : "warning.main" }}
             />
@@ -177,6 +178,7 @@ const Header = () => {
               size="small"
             />
             <DarkModeIcon
+              aria-hidden="true"
               fontSize="small"
               sx={{ color: isDark ? "secondary.main" : "text.disabled" }}
             />

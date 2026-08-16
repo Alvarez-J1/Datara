@@ -60,9 +60,10 @@ const Footer = () => {
             </li>
             <li>
               <Button
-                variant="text"
+                aria-label={hasWorkspaceAccess ? "Sign out of Datara" : "Sign in to Datara"}
                 color={hasWorkspaceAccess ? "error" : "success"}
                 onClick={handleAuthAction}
+                variant="text"
               >
                 {hasWorkspaceAccess ? "Sign Out" : "Sign In"}
               </Button>

@@ -30,10 +30,10 @@ const drawerWidth = 248;
 const closedWidth = 72;
 
 const navigationItems = [
-  { href: "/dashboard", icon: <HomeIcon />, label: "Overview" },
-  { href: "/dashboard/data", icon: <EqualizerIcon />, label: "Data" },
-  { href: "/dashboard/profile", icon: <Person2Icon />, label: "Profile" },
-  { href: "/dashboard/settings", icon: <SettingsIcon />, label: "Settings" },
+  { href: "/dashboard", icon: <HomeIcon aria-hidden="true" />, label: "Overview" },
+  { href: "/dashboard/data", icon: <EqualizerIcon aria-hidden="true" />, label: "Data" },
+  { href: "/dashboard/profile", icon: <Person2Icon aria-hidden="true" />, label: "Profile" },
+  { href: "/dashboard/settings", icon: <SettingsIcon aria-hidden="true" />, label: "Settings" },
 ];
 
 const isActiveRoute = (pathname: string | null, href: string) => {

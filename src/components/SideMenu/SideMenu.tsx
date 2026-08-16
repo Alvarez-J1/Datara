@@ -214,9 +214,9 @@ export default function SideMenu() {
                 justifyContent: "center",
                 minWidth: 0,
                 mr: open ? 1.5 : 0,
-              }}
-            >
-              <ExitToAppIcon />
+            }}
+          >
+              <ExitToAppIcon aria-hidden="true" />
             </ListItemIcon>
             <ListItemText
               primary={

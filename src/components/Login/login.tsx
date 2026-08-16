@@ -280,6 +280,7 @@ const Login = () => {
             <>
               <div className={scss.demoAccess}>
                 <Button
+                  aria-busy={isOpeningDemo}
                   className={scss.demoCta}
                   disabled={isLoading}
                   endIcon={<ArrowForwardIcon aria-hidden="true" />}

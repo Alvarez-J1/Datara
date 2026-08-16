@@ -26,6 +26,7 @@ import {
   type ChangeEvent,
   type ReactNode,
   useEffect,
+  useId,
   useRef,
   useState,
 } from "react";
@@ -109,8 +110,8 @@ const FieldRow = ({
   label,
 }: {
   children: ReactNode;
-  description: string;
-  label: string;
+  description: ReactNode;
+  label: ReactNode;
 }) => (
   <div className={scss.settingRow}>
     <div className={scss.settingCopy}>
@@ -133,17 +134,30 @@ const ToggleRow = ({
   disabled?: boolean;
   name: ToggleKey;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
-}) => (
-  <FieldRow description={description} label={label}>
-    <Switch
-      checked={checked}
-      disabled={disabled}
-      name={name}
-      onChange={onChange}
-      slotProps={{ input: { "aria-label": label } }}
-    />
-  </FieldRow>
-);
+}) => {
+  const descriptionId = useId();
+  const labelId = useId();
+
+  return (
+    <FieldRow
+      description={<span id={descriptionId}>{description}</span>}
+      label={<span id={labelId}>{label}</span>}
+    >
+      <Switch
+        checked={checked}
+        disabled={disabled}
+        name={name}
+        onChange={onChange}
+        slotProps={{
+          input: {
+            "aria-describedby": descriptionId,
+            "aria-labelledby": labelId,
+          },
+        }}
+      />
+    </FieldRow>
+  );
+};
 
 export default function Settings() {
   const authUser = useAuthUser();

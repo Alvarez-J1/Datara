@@ -304,7 +304,7 @@ export default function Profile() {
               <Button
                 className={scss.saveButton}
                 disabled={!isEditable || isSaving}
-                startIcon={<SaveOutlinedIcon />}
+                startIcon={<SaveOutlinedIcon aria-hidden="true" />}
                 type="submit"
                 variant="contained"
               >

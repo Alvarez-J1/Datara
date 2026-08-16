@@ -345,6 +345,7 @@ export default function Settings() {
         >
           <div className={scss.cardHeader}>
             <span
+              aria-hidden="true"
               className={scss.cardIcon}
               style={{
                 backgroundColor: alpha(theme.palette.secondary.main, 0.07),
@@ -398,7 +399,7 @@ export default function Settings() {
           sx={{ border: "1px solid", borderColor: "divider" }}
         >
           <div className={scss.cardHeader}>
-            <span className={scss.cardIcon}>
+            <span aria-hidden="true" className={scss.cardIcon}>
               <SpaceDashboardOutlinedIcon fontSize="small" />
             </span>
             <div>
@@ -470,7 +471,7 @@ export default function Settings() {
           sx={{ border: "1px solid", borderColor: "divider" }}
         >
           <div className={scss.cardHeader}>
-            <span className={scss.cardIcon}>
+            <span aria-hidden="true" className={scss.cardIcon}>
               <NotificationsNoneRoundedIcon fontSize="small" />
             </span>
             <div>
@@ -508,7 +509,7 @@ export default function Settings() {
           sx={{ border: "1px solid", borderColor: "divider" }}
         >
           <div className={scss.cardHeader}>
-            <span className={scss.cardIcon}>
+            <span aria-hidden="true" className={scss.cardIcon}>
               <PaletteOutlinedIcon fontSize="small" />
             </span>
             <div>

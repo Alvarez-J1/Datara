@@ -267,7 +267,7 @@ const Login = () => {
             <div className={scss.activityList}>
               {activityItems.map((item) => (
                 <div className={scss.activityItem} key={item}>
-                  <CheckCircleOutlineRoundedIcon fontSize="small" />
+                  <CheckCircleOutlineRoundedIcon aria-hidden="true" fontSize="small" />
                   <span>{item}</span>
                 </div>
               ))}

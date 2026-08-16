@@ -411,6 +411,7 @@ const Login = () => {
                   )}
 
                   <Button
+                    aria-busy={isSubmitting}
                     className={scss.primaryCta}
                     disabled={isLoading}
                     type="submit"

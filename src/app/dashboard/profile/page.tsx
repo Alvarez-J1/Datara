@@ -65,6 +65,8 @@ export default function Profile() {
   // The shared demo/admin account is intentionally locked server-side, so it
   // gets a read-only view instead of a save action that would just fail.
   const isEditable = !isDemoMode;
+  const emailUpdatesDescriptionId = "profile-email-updates-description";
+  const emailUpdatesLabelId = "profile-email-updates-label";
 
   const handleFormChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = event.target;
@@ -271,10 +273,13 @@ export default function Profile() {
 
             <div className={scss.preferenceRow}>
               <div>
-                <Typography className={scss.preferenceTitle}>
+                <Typography className={scss.preferenceTitle} id={emailUpdatesLabelId}>
                 Email updates
                 </Typography>
-                <Typography className={scss.preferenceDescription}>
+                <Typography
+                  className={scss.preferenceDescription}
+                  id={emailUpdatesDescriptionId}
+                >
                   Receive product updates, weekly performance summaries, and
                   account insights.
                 </Typography>
@@ -285,7 +290,10 @@ export default function Profile() {
                 name="receiveEmails"
                 onChange={handleFormChange}
                 slotProps={{
-                  input: { "aria-label": "Receive sales analytics emails" },
+                  input: {
+                    "aria-describedby": emailUpdatesDescriptionId,
+                    "aria-labelledby": emailUpdatesLabelId,
+                  },
                 }}
                 sx={{
                   color: "text.secondary",

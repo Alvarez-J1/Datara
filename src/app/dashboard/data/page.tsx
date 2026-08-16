@@ -397,6 +397,7 @@ const Data = () => {
         <div className={scss.tableScroll}>
           <Box className={scss.gridShell}>
             <DataGrid
+              aria-label="Revenue records table"
               apiRef={apiRef}
               checkboxSelection
               checkboxColDef={checkboxColumn}

@@ -238,6 +238,9 @@ const Header = () => {
                 onClose={handleCloseUserMenu}
                 open={Boolean(anchorElUser)}
                 slotProps={{
+                  list: {
+                    "aria-labelledby": userMenuButtonId,
+                  },
                   paper: {
                     sx: {
                       border: "1px solid",

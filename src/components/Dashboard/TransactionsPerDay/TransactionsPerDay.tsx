@@ -229,7 +229,7 @@ const TransactionsPerDay = ({
             <aside className={scss.insightRail} aria-label="Revenue trend highlights">
               <h3 className={scss.railTitle}>Pipeline metrics</h3>
               {insightMetrics.map((metric) => (
-                <div
+                <article
                   className={`${scss.insightItem} ${getPipelineAccentClassName(metric.key)}`}
                   key={metric.key}
                 >
@@ -249,7 +249,7 @@ const TransactionsPerDay = ({
                       {metric.change}
                     </span>
                   </div>
-                </div>
+                </article>
               ))}
             </aside>
           </div>

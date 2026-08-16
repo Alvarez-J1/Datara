@@ -113,3 +113,17 @@
     transform: translateY(0);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .bottomRow {
+    animation: none;
+  }
+
+  .analyticsCard {
+    transition: none;
+  }
+
+  .analyticsCard:hover {
+    transform: none;
+  }
+}

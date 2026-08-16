@@ -385,7 +385,7 @@ const Data = () => {
             <Button
               className={scss.toolbarButton}
               onClick={handleExport}
-              startIcon={<FileDownloadOutlinedIcon />}
+              startIcon={<FileDownloadOutlinedIcon aria-hidden="true" />}
               variant="outlined"
             >
               Export

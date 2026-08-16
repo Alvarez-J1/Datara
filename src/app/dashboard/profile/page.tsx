@@ -214,7 +214,7 @@ export default function Profile() {
 
           {!isEditable && (
             <div className={scss.readOnlyNotice}>
-              <InfoOutlinedIcon fontSize="small" />
+              <InfoOutlinedIcon aria-hidden="true" fontSize="small" />
               <Typography component="span">
                 This is the shared demo account, so editing is disabled here.
                 Sign up for a real account to update your name and email.

@@ -232,6 +232,7 @@ const TransactionsBottomRow = ({
           <Paper
             aria-busy={isLoading}
             className={`${scss.analyticsCard} ${compactMode ? scss.compact : ""}`}
+            component="article"
           >
             <div className={scss.cardHeader}>
               <div>

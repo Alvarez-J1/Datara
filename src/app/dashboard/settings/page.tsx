@@ -195,6 +195,8 @@ export default function Settings() {
   const isLoading = isSettingsLoading;
   const isEditable = !isLoading;
   const controlsDisabled = !isEditable || isSaving;
+  const defaultTimeRangeDescriptionId = "settings-default-time-range-description";
+  const defaultTimeRangeLabelId = "settings-default-time-range-label";
 
   const handleToggleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = event.target;
@@ -428,8 +430,12 @@ export default function Settings() {
 
           <div className={scss.settingList}>
             <FieldRow
-              description="Default lookback window for dashboard charts and KPI comparisons."
-              label="Default time range"
+              description={
+                <span id={defaultTimeRangeDescriptionId}>
+                  Default lookback window for dashboard charts and KPI comparisons.
+                </span>
+              }
+              label={<span id={defaultTimeRangeLabelId}>Default time range</span>}
             >
               <TextField
                 className={scss.settingSelect}
@@ -438,7 +444,12 @@ export default function Settings() {
                 onChange={handleFieldChange}
                 select
                 size="small"
-                slotProps={{ input: { "aria-label": "Default time range" } }}
+                slotProps={{
+                  input: {
+                    "aria-describedby": defaultTimeRangeDescriptionId,
+                    "aria-labelledby": defaultTimeRangeLabelId,
+                  },
+                }}
                 sx={fieldStyles}
                 value={formState.defaultTimeRange}
               >

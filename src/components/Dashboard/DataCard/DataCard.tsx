@@ -62,6 +62,7 @@ const DataCard = ({
         <div
           aria-label={`${title} 12-month trend`}
           className={`${scss.sparkline} ${isAreaChart(chart) ? scss.areaSparkline : ""} ${chart.type === "bar" ? scss.barSparkline : ""}`}
+          role="img"
         >
           {renderKpiChart(chart, compact)}
         </div>

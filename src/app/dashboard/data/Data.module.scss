@@ -288,3 +288,9 @@
     width: 100%;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .gridShell :global(.MuiDataGrid-row) {
+    transition: none;
+  }
+}

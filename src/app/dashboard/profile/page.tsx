@@ -183,17 +183,17 @@ export default function Profile() {
 
           <div className={scss.metaList}>
             <div className={scss.metaItem}>
-              <EmailOutlinedIcon fontSize="small" />
+              <EmailOutlinedIcon aria-hidden="true" fontSize="small" />
               <span>{displayEmail || "No email available"}</span>
             </div>
             <div className={scss.metaItem}>
-              <ShieldOutlinedIcon fontSize="small" />
+              <ShieldOutlinedIcon aria-hidden="true" fontSize="small" />
               <span>
                 {isDemoMode ? "Shared demo account (read-only)" : "Password protected"}
               </span>
             </div>
             <div className={scss.metaItem}>
-              <BadgeOutlinedIcon fontSize="small" />
+              <BadgeOutlinedIcon aria-hidden="true" fontSize="small" />
               <span>Workspace access enabled</span>
             </div>
           </div>

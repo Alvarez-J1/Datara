@@ -311,7 +311,7 @@ export default function Settings() {
             className={scss.saveButton}
             disabled={controlsDisabled}
             onClick={handleSubmit}
-            startIcon={<SaveOutlinedIcon />}
+            startIcon={<SaveOutlinedIcon aria-hidden="true" />}
             variant="contained"
           >
             {isSaving ? "Saving..." : "Save changes"}

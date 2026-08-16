@@ -292,7 +292,7 @@ const Login = () => {
 
                 {isDemoSlow && (
                   <div className={scss.demoSlowNotice} role="status">
-                    <InfoOutlinedIcon fontSize="small" />
+                    <InfoOutlinedIcon aria-hidden="true" fontSize="small" />
                     <p>
                       <strong>The backend is hosted on Render&apos;s free tier.</strong>{" "}
                       {isDemoTakingLong

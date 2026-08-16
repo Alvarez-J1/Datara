@@ -263,3 +263,17 @@
     transform: translateY(0);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .wrapper {
+    animation: none;
+  }
+
+  .insightItem {
+    transition: none;
+  }
+
+  .insightItem:hover {
+    transform: none;
+  }
+}

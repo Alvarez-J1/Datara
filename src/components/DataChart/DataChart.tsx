@@ -151,7 +151,7 @@ const DataChart = <TType extends keyof ChartTypeRegistry>({
         width: "100%",
       }}
     >
-      <canvas ref={chartRef} />
+      <canvas aria-hidden="true" ref={chartRef} />
     </div>
   );
 };

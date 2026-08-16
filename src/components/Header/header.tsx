@@ -228,7 +228,7 @@ const Header = () => {
                       </Typography>
                     </Box>
                   )}
-                  <KeyboardArrowDownIcon fontSize="small" />
+                  <KeyboardArrowDownIcon aria-hidden="true" fontSize="small" />
                 </Button>
               </Tooltip>
 

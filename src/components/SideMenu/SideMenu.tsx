@@ -100,7 +100,11 @@ export default function SideMenu() {
             onClick={handleDrawerToggle}
             size="small"
           >
-            {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            {open ? (
+              <ChevronLeftIcon aria-hidden="true" />
+            ) : (
+              <ChevronRightIcon aria-hidden="true" />
+            )}
           </IconButton>
         </Tooltip>
       </div>

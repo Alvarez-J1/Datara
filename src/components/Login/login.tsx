@@ -307,7 +307,7 @@ const Login = () => {
           )}
 
           <div className={scss.authCard}>
-            <div className={scss.cardIcon}>
+            <div className={scss.cardIcon} aria-hidden="true">
               <LockOutlinedIcon fontSize="small" />
             </div>
 

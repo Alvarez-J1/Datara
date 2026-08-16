@@ -97,6 +97,7 @@ const Header = () => {
           }}
         >
           <Box
+            aria-label="Go to Datara dashboard"
             component={Link}
             href="/dashboard"
             prefetch={false}

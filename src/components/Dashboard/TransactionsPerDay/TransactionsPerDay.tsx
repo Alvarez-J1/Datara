@@ -275,14 +275,14 @@ const getInsightChangeTone = (
 
 const InsightChangeIcon = ({ change }: { change: string }) => {
   if (change.trim().startsWith("-")) {
-    return <SouthEastIcon fontSize="inherit" />;
+    return <SouthEastIcon aria-hidden="true" fontSize="inherit" />;
   }
 
   if (change.trim().startsWith("+")) {
-    return <NorthEastIcon fontSize="inherit" />;
+    return <NorthEastIcon aria-hidden="true" fontSize="inherit" />;
   }
 
-  return <RemoveIcon fontSize="inherit" />;
+  return <RemoveIcon aria-hidden="true" fontSize="inherit" />;
 };
 
 const isChartResponseUsable = (

@@ -242,7 +242,9 @@ const TransactionsBottomRow = ({
               </div>
             </div>
 
-            <DataChart data={card.data} options={doughnutOptions} type="doughnut" />
+            <div aria-label={`${card.title} chart`} role="img">
+              <DataChart data={card.data} options={doughnutOptions} type="doughnut" />
+            </div>
 
             <div className={scss.cardFooter}>
               <Typography className={scss.highlight}>{card.highlight}</Typography>

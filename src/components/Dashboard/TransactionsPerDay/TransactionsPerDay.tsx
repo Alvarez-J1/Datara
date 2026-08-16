@@ -213,7 +213,12 @@ const TransactionsPerDay = ({
           </div>
 
           <div className={scss.chartBody}>
-            <div aria-busy={isLoading} className={scss.chart}>
+            <div
+              aria-busy={isLoading}
+              aria-label="Revenue and forecast trend chart"
+              className={scss.chart}
+              role="img"
+            >
               <DataChart
                 data={chartData}
                 options={revenueTrendOptions}

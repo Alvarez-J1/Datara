@@ -168,6 +168,7 @@ const Header = () => {
               sx={{ color: isDark ? "text.disabled" : "warning.main" }}
             />
             <Switch
+              aria-busy={colorMode.isSavingTheme}
               checked={isDark}
               disabled={colorMode.isSavingTheme}
               onChange={colorMode.toggleColorMode}

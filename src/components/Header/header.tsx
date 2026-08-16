@@ -191,7 +191,7 @@ const Header = () => {
                   aria-controls={anchorElUser ? userMenuId : undefined}
                   aria-expanded={anchorElUser ? "true" : undefined}
                   aria-haspopup="menu"
-                  aria-label="Open profile menu"
+                  aria-label={`Open profile menu for ${displayName}`}
                   id={userMenuButtonId}
                   onClick={handleOpenUserMenu}
                   sx={{

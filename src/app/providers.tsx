@@ -13,6 +13,7 @@ import {
   type Theme,
   type UserSettings,
 } from "@/lib/api/settings";
+import { warmBackend } from "@/lib/api/client";
 
 type ColorModeContextValue = {
   isSavingTheme: boolean;
@@ -222,6 +223,10 @@ function useBfcacheReload() {
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   useBfcacheReload();
+
+  useEffect(() => {
+    void warmBackend();
+  }, []);
 
   return (
     <SettingsProvider>

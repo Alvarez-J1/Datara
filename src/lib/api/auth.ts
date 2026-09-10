@@ -1,5 +1,6 @@
 import {
   apiRequest,
+  ensureBackendReady,
   type ApiRequestOptions,
   setAuthToken,
   setAuthUser,
@@ -41,6 +42,8 @@ export const login = async (
   request: LoginRequest,
   options: AuthRequestOptions = {}
 ): Promise<AuthResponse> => {
+  await ensureBackendReady();
+
   const response = await apiRequest<AuthResponse>("/api/auth/login", {
     auth: false,
     body: request,
@@ -56,6 +59,8 @@ export const login = async (
 export const register = async (
   request: RegisterRequest
 ): Promise<AuthResponse> => {
+  await ensureBackendReady();
+
   const response = await apiRequest<AuthResponse>("/api/auth/register", {
     auth: false,
     body: request,

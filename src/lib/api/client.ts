@@ -9,6 +9,13 @@ export const AUTH_TOKEN_STORAGE_KEY = "datara.authToken";
 const AUTH_USER_STORAGE_KEY = "datara.authUser";
 const AUTH_SESSION_COOKIE = "datara-authenticated";
 const AUTH_TOKEN_EVENT = "datara-auth-token-change";
+const BACKEND_HEALTH_PATH = "/api/health";
+const BACKEND_HEALTH_REQUEST_TIMEOUT_MS = 8000;
+const BACKEND_READY_TIMEOUT_MS = 90000;
+const BACKEND_READY_RETRY_DELAY_MS = 4000;
+const RECENT_BACKEND_HEALTH_TTL_MS = 30000;
+const BACKEND_READY_TIMEOUT_MESSAGE =
+  "The backend is still waking up. Please try again in a moment.";
 
 export type StoredAuthUser = {
   id: string;
@@ -22,6 +29,27 @@ const MISSING_AUTH_TOKEN_MESSAGE = "Authentication token is missing.";
 const NETWORK_ERROR_STATUS = 0;
 
 let demoAuthTokenRequest: Promise<string> | null = null;
+let backendReadinessRequest: Promise<void> | null = null;
+let lastBackendHealthyAt = 0;
+
+export type BackendReadinessStatus = "idle" | "checking" | "ready" | "timeout";
+
+export type BackendReadinessSnapshot = {
+  isChecking: boolean;
+  isReady: boolean;
+  lastCheckedAt: number | null;
+  lastError: string | null;
+  status: BackendReadinessStatus;
+};
+
+const backendReadinessListeners = new Set<() => void>();
+let backendReadinessSnapshot: BackendReadinessSnapshot = {
+  isChecking: false,
+  isReady: false,
+  lastCheckedAt: null,
+  lastError: null,
+  status: "idle",
+};
 
 type JsonBody = Record<string, unknown> | unknown[];
 type RequestBody = BodyInit | JsonBody | null;
@@ -52,6 +80,61 @@ export class ApiError extends Error {
     this.data = data;
   }
 }
+
+export const getBackendReadinessSnapshot = (): BackendReadinessSnapshot => {
+  return backendReadinessSnapshot;
+};
+
+export const subscribeBackendReadiness = (listener: () => void): (() => void) => {
+  backendReadinessListeners.add(listener);
+  return () => {
+    backendReadinessListeners.delete(listener);
+  };
+};
+
+export const useBackendReadiness = (): BackendReadinessSnapshot => {
+  const [snapshot, setSnapshot] = useState(getBackendReadinessSnapshot);
+
+  useEffect(() => {
+    return subscribeBackendReadiness(() => {
+      setSnapshot(getBackendReadinessSnapshot());
+    });
+  }, []);
+
+  return snapshot;
+};
+
+export const warmBackend = async (): Promise<boolean> => {
+  try {
+    await ensureBackendReady();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const waitForBackend = (
+  timeoutMs = BACKEND_READY_TIMEOUT_MS
+): Promise<void> => {
+  return ensureBackendReady(timeoutMs);
+};
+
+export const ensureBackendReady = (
+  timeoutMs = BACKEND_READY_TIMEOUT_MS
+): Promise<void> => {
+  if (hasRecentBackendHealth()) {
+    markBackendReady();
+    return Promise.resolve();
+  }
+
+  if (!backendReadinessRequest) {
+    backendReadinessRequest = checkBackendReadiness(timeoutMs).finally(() => {
+      backendReadinessRequest = null;
+    });
+  }
+
+  return backendReadinessRequest;
+};
 
 export const getAuthToken = (): string | null => {
   if (typeof window === "undefined") {
@@ -195,6 +278,7 @@ export const apiRequest = async <T>(
       body: serializedBody,
       headers: requestHeaders,
     });
+    markBackendReady();
   } catch (error) {
     throw new ApiError(getNetworkErrorMessage(error), NETWORK_ERROR_STATUS, null);
   }
@@ -214,6 +298,7 @@ export const apiRequest = async <T>(
           body: serializedBody,
           headers: requestHeaders,
         });
+        markBackendReady();
       } catch (error) {
         throw new ApiError(getNetworkErrorMessage(error), NETWORK_ERROR_STATUS, null);
       }
@@ -349,6 +434,8 @@ const getDemoAuthToken = async (): Promise<string | null> => {
 };
 
 const requestDemoAuthToken = async (): Promise<string> => {
+  await ensureBackendReady();
+
   let response: Response;
 
   try {
@@ -363,6 +450,7 @@ const requestDemoAuthToken = async (): Promise<string> => {
       },
       method: "POST",
     });
+    markBackendReady();
   } catch (error) {
     throw new ApiError(getNetworkErrorMessage(error), NETWORK_ERROR_STATUS, null);
   }
@@ -422,4 +510,149 @@ const toFiniteNumber = (value: unknown): number => {
 
 const isMissingAuthTokenError = (error: ApiError): boolean => {
   return error.status === 401 && error.message === MISSING_AUTH_TOKEN_MESSAGE;
+};
+
+const checkBackendReadiness = async (timeoutMs: number): Promise<void> => {
+  const deadline = Date.now() + timeoutMs;
+
+  setBackendReadinessSnapshot({
+    isChecking: true,
+    isReady: false,
+    lastCheckedAt: Date.now(),
+    lastError: null,
+    status: "checking",
+  });
+
+  while (Date.now() < deadline) {
+    if (hasRecentBackendHealth()) {
+      return;
+    }
+
+    const remainingMs = deadline - Date.now();
+    const healthTimeoutMs = Math.min(
+      BACKEND_HEALTH_REQUEST_TIMEOUT_MS,
+      Math.max(remainingMs, 1)
+    );
+
+    if (await checkBackendHealth(healthTimeoutMs)) {
+      markBackendReady();
+      return;
+    }
+
+    const retryDelayMs = Math.min(
+      BACKEND_READY_RETRY_DELAY_MS,
+      Math.max(deadline - Date.now(), 0)
+    );
+
+    if (retryDelayMs > 0) {
+      await delay(retryDelayMs);
+    }
+  }
+
+  if (hasRecentBackendHealth()) {
+    return;
+  }
+
+  setBackendReadinessSnapshot({
+    isChecking: false,
+    isReady: false,
+    lastCheckedAt: Date.now(),
+    lastError: BACKEND_READY_TIMEOUT_MESSAGE,
+    status: "timeout",
+  });
+
+  throw new ApiError(BACKEND_READY_TIMEOUT_MESSAGE, NETWORK_ERROR_STATUS, null);
+};
+
+const checkBackendHealth = async (timeoutMs: number): Promise<boolean> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    const response = await fetch(buildApiUrl(BACKEND_HEALTH_PATH), {
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+      },
+      method: "GET",
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      setBackendReadinessError(response.statusText || "Backend is not ready yet.");
+      return false;
+    }
+
+    const data = await parseResponse(response).catch(() => null);
+
+    if (!isHealthResponse(data)) {
+      return true;
+    }
+
+    const status = data.status.toLowerCase();
+    return status === "ok" || status === "up";
+  } catch (error) {
+    setBackendReadinessError(getNetworkErrorMessage(error));
+    return false;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+const setBackendReadinessError = (lastError: string): void => {
+  if (hasRecentBackendHealth()) {
+    return;
+  }
+
+  setBackendReadinessSnapshot({
+    ...backendReadinessSnapshot,
+    isChecking: true,
+    isReady: false,
+    lastCheckedAt: Date.now(),
+    lastError,
+    status: "checking",
+  });
+};
+
+const markBackendReady = (): void => {
+  lastBackendHealthyAt = Date.now();
+
+  setBackendReadinessSnapshot({
+    isChecking: false,
+    isReady: true,
+    lastCheckedAt: lastBackendHealthyAt,
+    lastError: null,
+    status: "ready",
+  });
+};
+
+const setBackendReadinessSnapshot = (
+  snapshot: BackendReadinessSnapshot
+): void => {
+  backendReadinessSnapshot = snapshot;
+  backendReadinessListeners.forEach((listener) => listener());
+};
+
+const hasRecentBackendHealth = (): boolean => {
+  return (
+    lastBackendHealthyAt > 0 &&
+    Date.now() - lastBackendHealthyAt < RECENT_BACKEND_HEALTH_TTL_MS
+  );
+};
+
+const isHealthResponse = (data: unknown): data is { status: string } => {
+  return (
+    data !== null &&
+    typeof data === "object" &&
+    "status" in data &&
+    typeof (data as { status?: unknown }).status === "string"
+  );
+};
+
+const delay = (ms: number): Promise<void> => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 };

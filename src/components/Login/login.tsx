@@ -11,8 +11,12 @@ import Tabs from "@mui/material/Tabs";
 import TextField from "@mui/material/TextField";
 import { alpha, useTheme } from "@mui/material/styles";
 import { login, register } from "@/lib/api/auth";
-import { ApiError, removeAuthToken, useHasAuthToken } from "@/lib/api/client";
-import { waitForBackend, warmBackend } from "@/lib/api/health";
+import {
+  ApiError,
+  removeAuthToken,
+  useBackendReadiness,
+  useHasAuthToken,
+} from "@/lib/api/client";
 import { clearDemoMode, enableDemoMode } from "@/lib/demoMode";
 import {
   type CSSProperties,
@@ -23,12 +27,10 @@ import {
 } from "react";
 import scss from "./Login.module.scss";
 
-// Free-tier hosting can cold-start slowly on the first request. If the demo
-// login hasn't resolved by this point, we let the user know why it's taking
-// a while instead of leaving the button looking frozen.
+// Free-tier hosting can cold-start slowly on the first request. If auth has
+// not resolved by this point, explain why the button is waiting.
 const DEMO_SLOW_LOAD_THRESHOLD_MS = 5000;
 const DEMO_TAKING_LONG_THRESHOLD_MS = 60000;
-const DEMO_LOGIN_TIMEOUT_MS = 15000;
 
 type AuthMode = "signIn" | "signUp";
 
@@ -48,6 +50,7 @@ const activityItems = [
 ];
 
 const Login = () => {
+  const backendReadiness = useBackendReadiness();
   const hasAuthToken = useHasAuthToken();
   const theme = useTheme();
   const [authMode, setAuthMode] = useState<AuthMode>("signIn");
@@ -65,6 +68,22 @@ const Login = () => {
   const isDark = theme.palette.mode === "dark";
   const isLoading = isSubmitting;
   const isSignedIn = hasAuthToken;
+  const isBackendWaking = backendReadiness.isChecking;
+  const showCredentialWakeNotice =
+    isSubmitting && !isOpeningDemo && isBackendWaking;
+  const showDemoWakeNotice = isOpeningDemo && (isBackendWaking || isDemoSlow);
+  const demoButtonLabel = isOpeningDemo
+    ? isBackendWaking
+      ? "Starting demo server..."
+      : "Opening demo..."
+    : "View Demo Workspace";
+  const submitButtonLabel = isSubmitting
+    ? isBackendWaking
+      ? "Waking backend..."
+      : "Please wait..."
+    : authMode === "signIn"
+      ? "Sign In"
+      : "Sign Up";
 
   // Hard redirect so the signed-in page is fully torn down and the browser's
   // Back button can't restore it after logout.
@@ -155,7 +174,6 @@ const Login = () => {
     let didStartNavigation = false;
 
     try {
-      await waitForBackend();
       await loginDemoUser();
       didStartNavigation = true;
       // Hard navigation for the same reason as handleCredentialsSubmit above:
@@ -191,8 +209,6 @@ const Login = () => {
   };
 
   useEffect(() => {
-    void warmBackend();
-
     return () => {
       if (demoSlowTimerRef.current) {
         clearTimeout(demoSlowTimerRef.current);
@@ -287,18 +303,24 @@ const Login = () => {
                   onClick={handleDemoAccess}
                   variant="contained"
                 >
-                  {isOpeningDemo ? "Opening demo..." : "View Demo Workspace"}
+                  {demoButtonLabel}
                 </Button>
                 <span>Explore the dashboard instantly, no account required.</span>
 
-                {isDemoSlow && (
+                {showDemoWakeNotice && (
                   <div className={scss.demoSlowNotice} role="status">
                     <InfoOutlinedIcon aria-hidden="true" fontSize="small" />
                     <p>
-                      <strong>The backend is hosted on Render&apos;s free tier.</strong>{" "}
+                      <strong>
+                        {isBackendWaking
+                          ? "Starting demo server..."
+                          : "The backend is hosted on SnapDeploy's free tier."}
+                      </strong>{" "}
                       {isDemoTakingLong
                         ? "This is taking longer than expected, but Datara will continue automatically as soon as the server responds."
-                        : "The first request may take 30-60 seconds while the server wakes up after inactivity. Please wait for the server to wake up."}
+                        : isBackendWaking
+                          ? "Datara is waking the backend now. The demo will open automatically as soon as it responds."
+                          : "The first request may take about 58-60 seconds while the server wakes up after inactivity. Please wait for the server to wake up."}
                     </p>
                   </div>
                 )}
@@ -404,6 +426,16 @@ const Login = () => {
                     value={password}
                   />
 
+                  {showCredentialWakeNotice && (
+                    <div className={scss.demoSlowNotice} role="status">
+                      <InfoOutlinedIcon aria-hidden="true" fontSize="small" />
+                      <p>
+                        <strong>Waking backend...</strong> Datara is starting the
+                        SnapDeploy server. Your request will continue automatically.
+                      </p>
+                    </div>
+                  )}
+
                   {formError && (
                     <p className={scss.formError} role="alert">
                       {formError}
@@ -417,11 +449,7 @@ const Login = () => {
                     type="submit"
                     variant="contained"
                   >
-                    {isSubmitting
-                      ? "Please wait..."
-                      : authMode === "signIn"
-                        ? "Sign In"
-                        : "Sign Up"}
+                    {submitButtonLabel}
                   </Button>
                 </form>
               </>
@@ -466,19 +494,7 @@ const normalizeEmail = (value: string): string => {
 };
 
 const loginDemoUser = async (): Promise<void> => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
-    controller.abort();
-  }, DEMO_LOGIN_TIMEOUT_MS);
-
-  try {
-    await login(
-      { email: DEMO_EMAIL, password: DEMO_PASSWORD },
-      { signal: controller.signal }
-    );
-  } finally {
-    clearTimeout(timeoutId);
-  }
+  await login({ email: DEMO_EMAIL, password: DEMO_PASSWORD });
 };
 
 const getDemoAccessErrorMessage = (error: unknown): string => {

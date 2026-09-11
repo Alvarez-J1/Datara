@@ -21,4 +21,14 @@ public class HealthController {
     public ResponseEntity<Void> healthHead() {
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/health")
+    public Map<String, String> platformHealth() {
+        return OK_RESPONSE;
+    }
+
+    @RequestMapping(value = "/health", method = RequestMethod.HEAD)
+    public ResponseEntity<Void> platformHealthHead() {
+        return ResponseEntity.ok().build();
+    }
 }

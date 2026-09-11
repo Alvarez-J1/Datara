@@ -49,6 +49,20 @@ class HealthControllerTest {
             .andExpect(content().string(""));
     }
 
+    @Test
+    void getPlatformHealthIsPublicAndReturnsOkJson() throws Exception {
+        mockMvc.perform(get("/health"))
+            .andExpect(status().isOk())
+            .andExpect(content().json("{\"status\":\"ok\"}"));
+    }
+
+    @Test
+    void headPlatformHealthIsPublicAndReturnsNoBody() throws Exception {
+        mockMvc.perform(head("/health"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(""));
+    }
+
     @TestConfiguration
     static class FilterConfig {
 

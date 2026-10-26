@@ -1,6 +1,5 @@
 "use client";
 
-import DataraLogo from "@/components/Brand/DataraLogo";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -239,10 +238,6 @@ const Login = () => {
 
       <div className={scss.authLayout}>
         <div className={scss.brandColumn}>
-          <div className={scss.brandBadge}>
-            <DataraLogo sx={{ height: 34, maxWidth: 148 }} />
-          </div>
-
           <div className={scss.brandCopy}>
             <p className={scss.eyebrow}>Analytics workspace</p>
             <h1>Modern analytics built for clarity.</h1>
